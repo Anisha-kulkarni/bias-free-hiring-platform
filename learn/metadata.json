@@ -1,7 +1,0 @@
-{
-  "name": "Antigravity Learning",
-  "description": "A next-gen personalized learning experience with adaptive paths, AI mentorship, and gamified progress.",
-  "requestFramePermissions": [
-    "microphone"
-  ]
-}
