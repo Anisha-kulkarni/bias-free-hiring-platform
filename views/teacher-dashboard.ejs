@@ -1,0 +1,86 @@
+<%- include('partials/header') %>
+
+    <div class="dashboard-header"
+        style="background: var(--color-bg-card); padding: 3rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+        <div class="container">
+            <h1 style="margin-bottom: 0.5rem;">Teacher Dashboard</h1>
+            <p style="color: var(--color-text-muted);">
+                Overview of class progress and learning profiles.
+            </p>
+        </div>
+    </div>
+
+    <div class="container" style="margin-top: 3rem;">
+        <!-- Stats Cards -->
+        <div
+            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;">
+            <div class="unit-card" style="display: block; animation-delay: 0.1s;">
+                <div style="color: var(--color-text-muted); font-size: 0.875rem; margin-bottom: 0.5rem;">Total Students
+                </div>
+                <div style="font-size: 2rem; font-weight: bold;">
+                    <%= stats.totalStudents %>
+                </div>
+            </div>
+            <div class="unit-card" style="display: block; animation-delay: 0.2s;">
+                <div style="color: var(--color-text-muted); font-size: 0.875rem; margin-bottom: 0.5rem;">Visual Learners
+                </div>
+                <div style="font-size: 2rem; font-weight: bold; color: var(--color-primary);">
+                    <%= stats.learningStyles.visual %>
+                </div>
+            </div>
+            <div class="unit-card" style="display: block; animation-delay: 0.3s;">
+                <div style="color: var(--color-text-muted); font-size: 0.875rem; margin-bottom: 0.5rem;">Textual
+                    Learners</div>
+                <div style="font-size: 2rem; font-weight: bold; color: var(--color-accent);">
+                    <%= stats.learningStyles.textual %>
+                </div>
+            </div>
+        </div>
+
+        <h2 style="margin-bottom: 1.5rem; animation: fadeIn 0.5s ease-out 0.4s backwards;">Student Roster</h2>
+        <div style="
+            background: var(--color-bg-card); 
+            border-radius: var(--radius-md); 
+            overflow: hidden; 
+            border: 1px solid rgba(255,255,255,0.05);
+            animation: fadeInUp 0.5s ease-out 0.5s backwards;
+        ">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: rgba(255,255,255,0.02); text-align: left;">
+                        <th style="padding: 1rem; font-weight: 500; color: var(--color-text-muted);">Name</th>
+                        <th style="padding: 1rem; font-weight: 500; color: var(--color-text-muted);">Email</th>
+                        <th style="padding: 1rem; font-weight: 500; color: var(--color-text-muted);">Style</th>
+                        <th style="padding: 1rem; font-weight: 500; color: var(--color-text-muted);">Pacing</th>
+                        <th style="padding: 1rem; font-weight: 500; color: var(--color-text-muted);">Level</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% students.forEach(student=> { %>
+                        <tr style="border-top: 1px solid rgba(255,255,255,0.05);">
+                            <td style="padding: 1rem;">
+                                <%= student.name %>
+                            </td>
+                            <td style="padding: 1rem; color: var(--color-text-muted);">
+                                <%= student.email %>
+                            </td>
+                            <td style="padding: 1rem;">
+                                <span
+                                    style="font-size: 0.8rem; padding: 2px 8px; border-radius: 4px; background: rgba(255,255,255,0.1);">
+                                    <%= student.preferences.learningStyle %>
+                                </span>
+                            </td>
+                            <td style="padding: 1rem;">
+                                <%= student.preferences.pacing %>
+                            </td>
+                            <td style="padding: 1rem;">
+                                <%= student.preferences.currentLevel %>
+                            </td>
+                        </tr>
+                        <% }) %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <%- include('partials/footer') %>

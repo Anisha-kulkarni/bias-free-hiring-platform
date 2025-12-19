@@ -1,0 +1,79 @@
+<%- include('partials/header') %>
+
+    <div class="container" style="padding-top: 4rem; max-width: 600px; animation: fadeIn 0.8s ease-out;">
+        <div style="text-align: center; margin-bottom: 3rem;">
+            <h1 style="animation: fadeInUp 0.8s ease-out;">Let's Personalize Your Experience</h1>
+            <p style="color: var(--color-text-muted); animation: fadeInUp 0.8s ease-out 0.2s backwards;">
+                Answer a few quick questions so we can tailor the content to your learning style.
+            </p>
+        </div>
+
+        <form action="/placement-test" method="POST" style="
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            padding: 2rem; 
+            border-radius: var(--radius-lg); 
+            border: 1px solid rgba(255,255,255,0.05);
+            animation: fadeInUp 0.8s ease-out 0.4s backwards;
+            box-shadow: 0 20px 50px -20px rgba(0,0,0,0.5);
+        ">
+
+            <div style="margin-bottom: 2rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">How do you prefer to
+                    learn?</label>
+                <div style="display: flex; gap: 1rem;">
+                    <label style="flex: 1; cursor: pointer; position: relative;">
+                        <div style="
+                            padding: 1rem; 
+                            border: 1px solid rgba(255,255,255,0.1); 
+                            border-radius: var(--radius-md); 
+                            text-align: center;
+                            transition: all 0.2s;
+                        " onmouseover="this.style.background='rgba(255,255,255,0.05)'; this.style.borderColor='var(--color-primary)'"
+                            onmouseout="this.style.background='transparent'; this.style.borderColor='rgba(255,255,255,0.1)'">
+                            <input type="radio" name="learningStyle" value="visual" checked
+                                style="margin-bottom: 0.5rem;">
+                            <div style="font-weight: 500;">Visual</div>
+                            <div style="font-size: 0.8rem; color: var(--color-text-muted);">Videos, Graphs</div>
+                        </div>
+                    </label>
+                    <label style="flex: 1; cursor: pointer; position: relative;">
+                        <div style="
+                            padding: 1rem; 
+                            border: 1px solid rgba(255,255,255,0.1); 
+                            border-radius: var(--radius-md); 
+                            text-align: center;
+                            transition: all 0.2s;
+                        " onmouseover="this.style.background='rgba(255,255,255,0.05)'; this.style.borderColor='var(--color-accent)'"
+                            onmouseout="this.style.background='transparent'; this.style.borderColor='rgba(255,255,255,0.1)'">
+                            <input type="radio" name="learningStyle" value="textual" style="margin-bottom: 0.5rem;">
+                            <div style="font-weight: 500;">Textual</div>
+                            <div style="font-size: 0.8rem; color: var(--color-text-muted);">Reading, Lists</div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 2rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Preferred pacing?</label>
+                <select name="pacing" style="
+                    width: 100%; 
+                    padding: 0.75rem; 
+                    border-radius: var(--radius-sm); 
+                    border: 1px solid rgba(255,255,255,0.1); 
+                    background: var(--color-bg-dark); 
+                    color: white;
+                    outline: none;
+                " onfocus="this.style.borderColor='var(--color-primary)'"
+                    onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
+                    <option value="moderate">Moderate (Standard)</option>
+                    <option value="fast">Fast (Accelerated)</option>
+                    <option value="slow">Slow (Thorough)</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn" style="width: 100%;">Create My Path</button>
+        </form>
+    </div>
+
+    <%- include('partials/footer') %>

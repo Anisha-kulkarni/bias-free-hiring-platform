@@ -1,0 +1,213 @@
+<%- include('partials/header') %>
+
+    <div class="container" style="padding: 4rem 0;">
+        <h1 style="margin-bottom: 2rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1rem;">
+            Account Settings
+        </h1>
+
+        <div
+            style="display: grid; grid-template-columns: 1fr; gap: 4rem; opacity: 0; animation: fadeInUp 0.5s forwards;">
+            <!-- Using a single column layout with navigation sticking to top on mobile, side on desktop if we wanted, 
+             but simple vertical stack is fine. Let's make it 2-column for desktop though for better use of space. -->
+        </div>
+
+        <div class="settings-grid"
+            style="display: grid; grid-template-columns: 250px 1fr; gap: 3rem; align-items: start;">
+
+            <!-- Sidebar Navigation -->
+            <aside style="position: sticky; top: 2rem;">
+                <div class="card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column;">
+                    <button onclick="scrollToSection('profile', this)" class="settings-nav-btn active"
+                        style="width: 100%; text-align: left; padding: 1rem 1.5rem; background: rgba(124, 58, 237, 0.1); border: none; border-left: 3px solid var(--color-primary); color: white; cursor: pointer; transition: 0.2s;">
+                        👤 Profile
+                    </button>
+                    <button onclick="scrollToSection('preferences', this)" class="settings-nav-btn"
+                        style="width: 100%; text-align: left; padding: 1rem 1.5rem; background: transparent; border: none; border-left: 3px solid transparent; color: var(--color-text-muted); cursor: pointer; transition: 0.2s;">
+                        ⚙️ Preferences
+                    </button>
+                    <button onclick="scrollToSection('security', this)" class="settings-nav-btn"
+                        style="width: 100%; text-align: left; padding: 1rem 1.5rem; background: transparent; border: none; border-left: 3px solid transparent; color: var(--color-text-muted); cursor: pointer; transition: 0.2s;">
+                        🔒 Security
+                    </button>
+                </div>
+            </aside>
+
+            <!-- Main Content -->
+            <div class="settings-content">
+
+                <% if (success) { %>
+                    <div
+                        style="padding: 1rem; background: rgba(34, 197, 94, 0.2); border: 1px solid #22c55e; border-radius: 8px; margin-bottom: 2rem; color: #86efac; animation: fadeIn 0.5s;">
+                        <%= success %>
+                    </div>
+                    <% } %>
+
+                        <% if (error) { %>
+                            <div
+                                style="padding: 1rem; background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; border-radius: 8px; margin-bottom: 2rem; color: #fca5a5; animation: fadeIn 0.5s;">
+                                <%= error %>
+                            </div>
+                            <% } %>
+
+                                <!-- Profile Section -->
+                                <section id="profile" style="scroll-margin-top: 2rem; margin-bottom: 4rem;">
+                                    <h2 style="margin-bottom: 1rem;">Profile Information</h2>
+                                    <p style="color: var(--color-text-muted); margin-bottom: 1.5rem;">Update your
+                                        account's profile information and email address.</p>
+                                    <form action="/settings/profile" method="POST" class="card"
+                                        style="display: grid; gap: 1.5rem;">
+                                        <div>
+                                            <label
+                                                style="display: block; margin-bottom: 0.5rem; color: var(--color-text-muted);">Display
+                                                Name</label>
+                                            <input type="text" name="name" value="<%= user.name %>" required
+                                                placeholder="Your Name">
+                                        </div>
+                                        <div>
+                                            <label
+                                                style="display: block; margin-bottom: 0.5rem; color: var(--color-text-muted);">Email
+                                                Address</label>
+                                            <input type="email" name="email" value="<%= user.email %>" required
+                                                placeholder="you@example.com">
+                                        </div>
+                                        <div>
+                                            <button type="submit" class="btn">Save Profile</button>
+                                        </div>
+                                    </form>
+                                </section>
+
+                                <!-- Preferences Section -->
+                                <section id="preferences" style="scroll-margin-top: 2rem; margin-bottom: 4rem;">
+                                    <h2 style="margin-bottom: 1rem;">Learning Preferences</h2>
+                                    <p style="color: var(--color-text-muted); margin-bottom: 1.5rem;">Customize how the
+                                        AI tutors you and adapts to your style.</p>
+                                    <form action="/settings/preferences" method="POST" class="card"
+                                        style="display: grid; gap: 1.5rem;">
+                                        <div>
+                                            <label
+                                                style="display: block; margin-bottom: 0.5rem; color: var(--color-text-muted);">Learning
+                                                Style</label>
+                                            <select name="learningStyle"
+                                                style="width: 100%; padding: 1rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius-md); color: white; outline: none;">
+                                                <option value="visual" <%=user.preferences.learningStyle==='visual'
+                                                    ? 'selected' : '' %>>Visual (Images, Diagrams)</option>
+                                                <option value="textual" <%=user.preferences.learningStyle==='textual'
+                                                    ? 'selected' : '' %>>Textual (Reading, Writing)</option>
+                                                <option value="auditory" <%=user.preferences.learningStyle==='auditory'
+                                                    ? 'selected' : '' %>>Auditory (Listening, Discussing)</option>
+                                                <option value="kinesthetic"
+                                                    <%=user.preferences.learningStyle==='kinesthetic' ? 'selected' : ''
+                                                    %>>Kinesthetic (Hands-on, Practice)</option>
+                                            </select>
+                                            <p
+                                                style="font-size: 0.8rem; color: var(--color-text-muted); margin-top: 0.5rem;">
+                                                This helps the AI choose the right content format for you.</p>
+                                        </div>
+                                        <div>
+                                            <label
+                                                style="display: block; margin-bottom: 0.5rem; color: var(--color-text-muted);">Learning
+                                                Pacing</label>
+                                            <select name="pacing"
+                                                style="width: 100%; padding: 1rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius-md); color: white; outline: none;">
+                                                <option value="slow" <%=user.preferences.pacing==='slow' ? 'selected'
+                                                    : '' %>>Relaxed (More examples, slower progression)</option>
+                                                <option value="moderate" <%=user.preferences.pacing==='moderate'
+                                                    ? 'selected' : '' %>>Moderate (Balanced)</option>
+                                                <option value="fast" <%=user.preferences.pacing==='fast' ? 'selected'
+                                                    : '' %>>Intense (Rapid fire, challenging)</option>
+                                            </select>
+                                            <p
+                                                style="font-size: 0.8rem; color: var(--color-text-muted); margin-top: 0.5rem;">
+                                                Adjusts how quickly new concepts are introduced.</p>
+                                        </div>
+                                        <div>
+                                            <button type="submit" class="btn">Update Preferences</button>
+                                        </div>
+                                    </form>
+                                </section>
+
+                                <!-- Security Section -->
+                                <section id="security" style="scroll-margin-top: 2rem;">
+                                    <h2 style="margin-bottom: 1rem;">Security</h2>
+                                    <p style="color: var(--color-text-muted); margin-bottom: 1.5rem;">Ensure your
+                                        account is using a long, random password to stay secure.</p>
+                                    <form action="/settings/password" method="POST" class="card"
+                                        style="display: grid; gap: 1.5rem;">
+                                        <div>
+                                            <label
+                                                style="display: block; margin-bottom: 0.5rem; color: var(--color-text-muted);">New
+                                                Password</label>
+                                            <input type="password" name="password" required placeholder="••••••••">
+                                        </div>
+                                        <div>
+                                            <label
+                                                style="display: block; margin-bottom: 0.5rem; color: var(--color-text-muted);">Confirm
+                                                Password</label>
+                                            <input type="password" name="confirmPassword" required
+                                                placeholder="••••••••">
+                                        </div>
+                                        <div>
+                                            <button type="submit" class="btn"
+                                                style="background: transparent; border: 1px solid var(--color-primary);">Change
+                                                Password</button>
+                                        </div>
+                                    </form>
+                                </section>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function scrollToSection(id, btn) {
+            document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+
+            // Update active class
+            document.querySelectorAll('.settings-nav-btn').forEach(b => {
+                b.style.background = 'transparent';
+                b.style.color = 'var(--color-text-muted)';
+                b.style.borderLeftColor = 'transparent';
+                b.classList.remove('active');
+            });
+
+            if (btn) {
+                btn.style.background = 'rgba(124, 58, 237, 0.1)';
+                btn.style.color = 'white';
+                btn.style.borderLeftColor = 'var(--color-primary)';
+                btn.classList.add('active');
+            }
+        }
+    </script>
+
+    <style>
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .settings-grid {
+                grid-template-columns: 1fr;
+            }
+
+            aside {
+                position: relative;
+                top: 0;
+                margin-bottom: 2rem;
+            }
+
+            .settings-nav-btn {
+                padding: 0.8rem !important;
+            }
+        }
+
+        select:focus {
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.2);
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        select option {
+            background: #1f2937;
+            /* Dark background for options */
+            color: white;
+        }
+    </style>
+
+    <%- include('partials/footer') %>

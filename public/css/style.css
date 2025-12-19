@@ -1,0 +1,364 @@
+:root {
+    /* Cosmic / Anti-Gravity Palette */
+    --hue-primary: 260;
+    /* Deep Purple */
+    --hue-secondary: 190;
+    /* Cyan */
+    --hue-accent: 320;
+    /* Pink/Magenta */
+
+    --color-bg-deep: #030014;
+    /* Deepest space black */
+    --color-bg-card: rgba(17, 24, 39, 0.7);
+    /* Glassy dark */
+
+    --color-primary: hsl(var(--hue-primary), 100%, 70%);
+    --color-primary-glow: hsla(var(--hue-primary), 100%, 70%, 0.5);
+
+    --color-secondary: hsl(var(--hue-secondary), 100%, 70%);
+    --color-secondary-glow: hsla(var(--hue-secondary), 100%, 70%, 0.5);
+
+    --color-accent: hsl(var(--hue-accent), 100%, 60%);
+
+    --color-text-main: #ffffff;
+    --color-text-muted: #9ca3af;
+
+    /* Fonts */
+    --font-heading: 'Outfit', sans-serif;
+    --font-body: 'Inter', sans-serif;
+
+    /* Glassmorphism */
+    --glass-border: 1px solid rgba(255, 255, 255, 0.1);
+    --glass-bg: rgba(255, 255, 255, 0.03);
+    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+
+    /* Spacing & Radius */
+    --radius-md: 12px;
+    --radius-lg: 24px;
+    --space-md: 1.5rem;
+}
+
+/* Global Reset */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-body);
+    background-color: var(--color-bg-deep);
+    color: var(--color-text-main);
+    line-height: 1.6;
+    overflow-x: hidden;
+    min-height: 100vh;
+    background-image:
+        radial-gradient(circle at 15% 50%, rgba(76, 29, 149, 0.15) 0%, transparent 25%),
+        radial-gradient(circle at 85% 30%, rgba(56, 189, 248, 0.15) 0%, transparent 25%);
+}
+
+/* Stars Background Effect */
+body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* Updated Stars: Bigger, Brighter, and Colorful (White, Cyan, Purple) */
+    background-image: url("data:image/svg+xml,%3Csvg width='200' height='200' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='10' cy='10' r='2' fill='white'/%3E%3Ccircle cx='50' cy='80' r='1.5' fill='%2322d3ee'/%3E%3Ccircle cx='150' cy='30' r='2' fill='%23e879f9'/%3E%3Ccircle cx='100' cy='150' r='1.2' fill='white'/%3E%3Ccircle cx='180' cy='180' r='1.5' fill='%23818cf8'/%3E%3C/svg%3E");
+    opacity: 0.9;
+    z-index: -1;
+    pointer-events: none;
+    animation: twinkle 4s infinite alternate ease-in-out;
+}
+
+@keyframes twinkle {
+    0% {
+        opacity: 0.7;
+        transform: scale(1);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1.3);
+        filter: drop-shadow(0 0 3px white);
+    }
+}
+
+/* Typography */
+h1,
+h2,
+h3,
+h4 {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    color: white;
+    letter-spacing: -0.02em;
+}
+
+h1 {
+    font-size: 3.5rem;
+    background: linear-gradient(135deg, #fff 0%, #a5b4fc 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 30px rgba(165, 180, 252, 0.3);
+}
+
+/* Container */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+/* Anti-Gravity Buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.8rem 2rem;
+    background: linear-gradient(135deg, var(--color-primary), #7c3aed);
+    color: white;
+    font-weight: 600;
+    border-radius: 50px;
+    /* Pill shape */
+    border: none;
+    cursor: pointer;
+    font-family: var(--font-body);
+    font-size: 1rem;
+    text-decoration: none;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    /* Bouncy spring */
+    box-shadow: 0 10px 20px -5px var(--color-primary-glow);
+    position: relative;
+    overflow: hidden;
+    z-index: 10;
+}
+
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: 0.5s;
+    z-index: -1;
+}
+
+.btn:hover {
+    transform: translateY(-5px) scale(1.05);
+    /* Levitate */
+    box-shadow: 0 20px 40px -5px var(--color-primary-glow);
+}
+
+.btn:hover::before {
+    left: 100%;
+}
+
+.btn:active {
+    transform: translateY(-2px) scale(0.98);
+}
+
+/* Glass Cards */
+.card,
+.unit-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(16px);
+    border: var(--glass-border);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    box-shadow: var(--glass-shadow);
+    transition: all 0.4s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Hover Effect for Cards - "Hover Lift" */
+.unit-card:hover {
+    transform: translateY(-8px);
+    background: rgba(255, 255, 255, 0.07);
+    border-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5),
+        0 0 20px rgba(139, 92, 246, 0.2);
+    /* Glow */
+}
+
+/* Make cards enter with staggered animation */
+.unit-card {
+    opacity: 0;
+    animation: floatUp 0.6s ease-out forwards;
+}
+
+@keyframes floatUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Stagger loop handled via nth-child in specialized files or JS, 
+   but adding basic CSS support here */
+.unit-card:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.unit-card:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.unit-card:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+/* Interactive Inputs */
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+    width: 100%;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-md);
+    color: white;
+    font-family: var(--font-body);
+    transition: 0.3s;
+    outline: none;
+}
+
+input:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.2);
+    background: rgba(0, 0, 0, 0.5);
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Loader */
+.loader {
+    font-size: 1.2rem;
+    color: var(--color-accent);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.loader::after {
+    content: '';
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--color-accent);
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Chat Widget Specifics Override */
+#chat-widget button {
+    box-shadow: 0 0 20px var(--color-primary-glow);
+    animation: pulseGlow 3s infinite;
+}
+
+@keyframes pulseGlow {
+    0% {
+        box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.4);
+    }
+
+    70% {
+        box-shadow: 0 0 0 20px rgba(139, 92, 246, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(139, 92, 246, 0);
+    }
+}
+
+/* Google Translate Customization */
+#google_translate_element {
+    margin-right: 1rem;
+}
+
+.goog-te-gadget-simple {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    padding: 6px 10px !important;
+    border-radius: 20px !important;
+    transition: all 0.3s ease;
+    display: flex !important;
+    align-items: center;
+}
+
+.goog-te-gadget-simple:hover {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    border-color: rgba(255, 255, 255, 0.4) !important;
+}
+
+.goog-te-gadget-simple .goog-te-menu-value {
+    margin: 0 !important;
+}
+
+.goog-te-gadget-simple .goog-te-menu-value span {
+    color: #cbd5e1 !important;
+    /* text-muted */
+    font-family: 'Inter', sans-serif !important;
+    font-size: 0.85rem !important;
+}
+
+.goog-te-gadget-simple .goog-te-menu-value span:first-child {
+    /* The selected language text */
+    font-weight: 500;
+}
+
+/* Hide the Google Icon */
+.goog-te-gadget-icon {
+    display: none !important;
+}
+
+/* Hide the separator pipe */
+.goog-te-gadget-simple .goog-te-menu-value span[style*="border-left"] {
+    display: none !important;
+}
+
+/* Remove Top Frame push from Body */
+body {
+    top: 0 !important;
+}
+
+/* Hide the massive top banner if it appears */
+.goog-te-banner-frame.skiptranslate {
+    display: none !important;
+}

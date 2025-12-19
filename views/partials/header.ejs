@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        <%= typeof title !=='undefined' ? title : 'Antigravity Learning' %>
+    </title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="/css/style.css?v=<%= Date.now() %>">
+</head>
+
+<body>
+    <header class="app-header">
+        <div class="container">
+            <nav style="display: flex; justify-content: space-between; align-items: center; padding: 20px 0;">
+                <div class="logo" style="font-family: var(--font-heading); font-size: 1.5rem; font-weight: bold;">
+                    Antigravity<span style="color: var(--color-primary)">.</span>
+                </div>
+                <!-- Auth Placeholder -->
+                <div class="nav-links" style="display: flex; gap: 1rem; align-items: center;">
+                    <!-- Translator Container -->
+                    <div id="google_translate_element"></div>
+
+                    <% if (typeof user !=='undefined' && user) { %>
+                        <a href="/settings">Settings</a>
+                        <a href="#"
+                            onclick="document.querySelector('.app-header').style.display='none'; alert('Zen Mode active! Refresh to exit.'); return false;">Zen
+                            Mode</a>
+                        <a href="/dashboard">Dashboard</a>
+                        <a href="/logout">Logout</a>
+                        <% } else { %>
+                            <a href="/login" class="btn btn-outline" style="padding: 0.5rem 1rem;">Login</a>
+                            <% } %>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Google Translate Script -->
+    <script type="text/javascript">
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({ pageLanguage: 'en', layout: google.translate.TranslateElement.InlineLayout.SIMPLE }, 'google_translate_element');
+        }
+    </script>
+    <script type="text/javascript"
+        src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+    <main>

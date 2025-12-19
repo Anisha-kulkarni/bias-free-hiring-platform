@@ -1,0 +1,22 @@
+[
+    {
+        "id": "u123",
+        "name": "Alex Johnson",
+        "email": "alex@example.com",
+        "preferences": {
+            "learningStyle": "visual",
+            "pacing": "moderate",
+            "currentLevel": 1
+        }
+    },
+    {
+        "id": "u456",
+        "name": "Jamie Lee",
+        "email": "jamie@example.com",
+        "preferences": {
+            "learningStyle": "textual",
+            "pacing": "fast",
+            "currentLevel": 2
+        }
+    }
+]

@@ -1,0 +1,26 @@
+<%- include('partials/header') %>
+
+    <div class="hero" style="text-align: center; padding: 6rem 0;">
+        <div class="container">
+            <h1 style="font-size: 3.5rem; margin-bottom: 1.5rem;">
+                <span
+                    style="background: linear-gradient(to right, #fff, #aaa); -webkit-background-clip: text; background-clip: text; color: transparent;">
+                    Personalized Learning
+                </span>
+                <br>
+                <span style="color: var(--color-primary)">Reimagined.</span>
+            </h1>
+            <p style="font-size: 1.25rem; color: var(--color-text-muted); max-width: 600px; margin: 0 auto 2.5rem;">
+                Adaptive pacing, tailored content, and AI-driven insights to keep you engaged and on track.
+            </p>
+            <div class="cta-group">
+                <% if (typeof user !=='undefined' && user) { %>
+                    <a href="/dashboard" class="btn">Go to Dashboard</a>
+                    <% } else { %>
+                        <a href="/login" class="btn">Start Your Journey</a>
+                        <% } %>
+            </div>
+        </div>
+    </div>
+
+    <%- include('partials/footer') %>

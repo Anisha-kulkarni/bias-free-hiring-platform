@@ -1,0 +1,253 @@
+<!-- AI Video Assistant Modal -->
+<div id="aiVideoModal" style="
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(10px);
+    z-index: 2000;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.3s ease-out;
+">
+    <div style="
+        width: 90%;
+        max-width: 800px;
+        background: var(--color-bg-card);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: var(--radius-lg);
+        padding: 2rem;
+        position: relative;
+        text-align: center;
+    ">
+        <button onclick="closeVideo()" style="
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+        ">&times;</button>
+
+        <h2
+            style="margin-bottom: 2rem; background: linear-gradient(135deg, #a78bfa 0%, #34d399 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+            AI Video Tutor</h2>
+
+        <div id="videoContainer" style="
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: #000;
+            border-radius: var(--radius-md);
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        ">
+            <!-- Animated Avatar -->
+            <div id="aiAvatar" style="
+                width: 150px;
+                height: 150px;
+                background: linear-gradient(45deg, var(--color-primary), var(--color-secondary));
+                border-radius: 50%;
+                box-shadow: 0 0 50px var(--color-primary-glow);
+                margin-bottom: 2rem;
+                position: relative;
+                transition: transform 0.2s;
+            ">
+                <div style="
+                    position: absolute;
+                    top: 40%;
+                    left: 20%;
+                    width: 20px;
+                    height: 20px;
+                    background: white;
+                    border-radius: 50%;
+                "></div>
+                <div style="
+                    position: absolute;
+                    top: 40%;
+                    right: 20%;
+                    width: 20px;
+                    height: 20px;
+                    background: white;
+                    border-radius: 50%;
+                "></div>
+                <!-- Mouth -->
+                <div id="aiMouth" style="
+                    position: absolute;
+                    bottom: 20%;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    width: 40px;
+                    height: 10px;
+                    background: white;
+                    border-radius: 20px;
+                    transition: height 0.1s;
+                "></div>
+            </div>
+
+            <div id="aiCaptions" style="
+                position: absolute;
+                bottom: 2rem;
+                width: 80%;
+                text-align: center;
+                font-size: 1.2rem;
+                text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+                color: white;
+                background: rgba(0,0,0,0.5);
+                padding: 0.5rem;
+                border-radius: 8px;
+            ">
+                Identifying key concepts...
+            </div>
+
+            <div id="loadingPulse"
+                style="position: absolute; top:0; left:0; width:100%; height:100%; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.7); z-index: 10;">
+                <span class="loader">Generating Lesson...</span>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 1rem; justify-content: center;">
+            <button id="playPauseBtn" onclick="togglePlay()" class="btn" style="width: 150px;" disabled>
+                Play/Pause
+            </button>
+            <button onclick="regenerateVideo()" class="btn"
+                style="background: transparent; border: 1px solid rgba(255,255,255,0.2);">
+                New Perspective
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let synthesis = window.speechSynthesis;
+    let speaking = false;
+    let utterance = null;
+    let currentText = "";
+
+    function openAiVideo() {
+        document.getElementById('aiVideoModal').style.display = 'flex';
+        generateScript();
+    }
+
+    function closeVideo() {
+        document.getElementById('aiVideoModal').style.display = 'none';
+        synthesis.cancel();
+        speaking = false;
+        clearInterval(animationInterval);
+    }
+
+    async function generateScript() {
+        const loading = document.getElementById('loadingPulse');
+        const captions = document.getElementById('aiCaptions');
+        const btn = document.getElementById('playPauseBtn');
+
+        loading.style.display = 'flex';
+        btn.disabled = true;
+
+        try {
+            // Use existing Chat API to get an explanation script
+            const context = document.querySelector('h1').innerText;
+            const res = await fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    message: "Explain this topic to me like a short 30-second video script. Be engaging. Don't include camera directions.",
+                    contextUnit: context
+                })
+            });
+            const data = await res.json();
+            currentText = data.response;
+
+            loading.style.display = 'none';
+            btn.disabled = false;
+            captions.innerText = "Ready to play.";
+
+            speak(currentText);
+
+        } catch (e) {
+            captions.innerText = "Error generating video script.";
+            loading.style.display = 'none';
+        }
+    }
+
+    let animationInterval;
+    function speak(text) {
+        if (synthesis.speaking) synthesis.cancel();
+
+        utterance = new SpeechSynthesisUtterance(text);
+
+        // Select a good voice if available
+        const voices = synthesis.getVoices();
+        const preferredVoice = voices.find(v => v.name.includes('Google US English')) || voices[0];
+        if (preferredVoice) utterance.voice = preferredVoice;
+
+        utterance.rate = 1.0;
+        utterance.pitch = 1.1;
+
+        utterance.onstart = () => {
+            speaking = true;
+            document.getElementById('aiCaptions').innerText = "Playing...";
+            startAnimation();
+        };
+
+        utterance.onend = () => {
+            speaking = false;
+            stopAnimation();
+            document.getElementById('aiCaptions').innerText = "Lesson Complete.";
+        };
+
+        // Split text for fake captions (simple mock)
+        let words = text.split(' ');
+        let wordIndex = 0;
+        utterance.onboundary = (event) => {
+            // Mock caption update (roughly)
+            if (event.name === 'word') {
+                // Updating full text logic is complex for simple demo, skipping exact sync
+            }
+        };
+
+        synthesis.speak(utterance);
+    }
+
+    function startAnimation() {
+        const mouth = document.getElementById('aiMouth');
+        const avatar = document.getElementById('aiAvatar');
+
+        animationInterval = setInterval(() => {
+            const h = Math.random() * 20 + 5; // vary mouth height
+            mouth.style.height = h + 'px';
+
+            const scale = 1 + Math.random() * 0.05;
+            avatar.style.transform = `scale(${scale})`;
+        }, 100);
+    }
+
+    function stopAnimation() {
+        clearInterval(animationInterval);
+        document.getElementById('aiMouth').style.height = '10px';
+        document.getElementById('aiAvatar').style.transform = 'scale(1)';
+    }
+
+    function togglePlay() {
+        if (synthesis.paused) {
+            synthesis.resume();
+        } else if (synthesis.speaking) {
+            synthesis.pause();
+        } else {
+            speak(currentText);
+        }
+    }
+
+    function regenerateVideo() {
+        generateScript();
+    }
+</script>

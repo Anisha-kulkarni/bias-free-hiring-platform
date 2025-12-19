@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@600;700&display=swap" rel="stylesheet">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header class="app-header">
+        <div class="container">
+            <nav style="display: flex; justify-content: space-between; align-items: center; padding: 20px 0;">
+                <div class="logo" style="font-family: var(--font-heading); font-size: 1.5rem; font-weight: bold;">
+                    Antigravity<span style="color: var(--color-primary)">.</span>
+                </div>
+                <!-- Auth Placeholder -->
+                <div class="nav-links">
+                    <% if (typeof user !== 'undefined' && user) { %>
+                        <a href="/dashboard">Dashboard</a>
+                        <a href="/logout">Logout</a>
+                    <% } else { %>
+                        <a href="/login" class="btn btn-outline" style="padding: 0.5rem 1rem;">Login</a>
+                    <% } %>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <%- body %>
+    </main>
+
+    <footer style="margin-top: 4rem; padding: 2rem 0; border-top: 1px solid rgba(255,255,255,0.1); text-align: center; color: var(--color-text-muted);">
+        <div class="container">
+            <p>&copy; 2025 Antigravity Learning. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

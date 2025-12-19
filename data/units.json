@@ -1,0 +1,34 @@
+[
+  {
+    "id": "u1",
+    "title": "Introduction to Algebra",
+    "type": "video",
+    "difficulty": 1,
+    "tags": ["visual", "foundation"],
+    "content": "<h1>Introduction to Algebra</h1><p>Watch this introductory video to understand the basics.</p>"
+  },
+  {
+    "id": "u2",
+    "title": "Solving Linear Equations",
+    "type": "text",
+    "difficulty": 2,
+    "tags": ["text", "practice"],
+    "content": "<h1>Solving Linear Equations</h1><p>Step-by-step guide to solving x + 5 = 10.</p>"
+  },
+  {
+    "id": "u3",
+    "title": "Interactive Graphing",
+    "type": "interactive",
+    "difficulty": 2,
+    "tags": ["visual", "interactive"],
+    "content": "<h1>Interactive Graphing</h1><p>Plot the points on the graph below.</p>"
+  },
+  {
+    "id": "u4",
+    "title": "Advanced Polynomials",
+    "type": "text",
+    "difficulty": 5,
+    "tags": ["text", "advanced"],
+    "content": "<h1>Advanced Polynomials</h1><p>Deep dive into polynomial functions.</p>"
+  }
+]

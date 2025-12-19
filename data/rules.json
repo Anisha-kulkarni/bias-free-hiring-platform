@@ -1,0 +1,27 @@
+{
+    "learning_styles": {
+        "visual": {
+            "boost_tags": [
+                "visual",
+                "video"
+            ],
+            "penalty_tags": [
+                "text"
+            ]
+        },
+        "textual": {
+            "boost_tags": [
+                "text"
+            ],
+            "penalty_tags": [
+                "video"
+            ]
+        }
+    },
+    "pacing_multipliers": {
+        "fast": 1.5,
+        "moderate": 1.0,
+        "slow": 0.5
+    },
+    "default_path_length": 3
+}

@@ -1,0 +1,479 @@
+<%- include('partials/header') %>
+
+    <div class="container" style="padding-top: 3rem; max-width: 900px; animation: fadeIn 0.5s ease-out;">
+        <div style="margin-bottom: 2rem;">
+            <a href="/dashboard"
+                style="display: inline-flex; align-items: center; gap: 0.5rem; color: var(--color-text-muted); transition: color 0.2s;">
+                &larr; Back to Path
+            </a>
+        </div>
+
+        <div class="unit-content" style="
+            background: var(--color-bg-card); 
+            padding: 3rem; 
+            border-radius: var(--radius-lg); 
+            border: 1px solid rgba(255,255,255,0.05);
+            animation: fadeInUp 0.5s ease-out 0.2s backwards;
+        ">
+            <header style="margin-bottom: 2rem; padding-bottom: 2rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                <div
+                    style="display: flex; gap: 1rem; align-items: center; justify-content: space-between; margin-bottom: 1rem; flex-wrap: wrap;">
+
+                    <!-- Meta Tags -->
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <span
+                            style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--color-accent);">
+                            <%= unit.type %>
+                        </span>
+                        <span style="color: var(--color-text-muted);">•</span>
+                        <span style="font-size: 0.8rem; color: var(--color-text-muted);">Lvl <%= unit.difficulty %>
+                        </span>
+                    </div>
+
+                    <!-- Feature: Focus Mode & Difficulty Controls -->
+                    <div style="display: flex; gap: 1rem; align-items: center;">
+
+                        <!-- Difficulty Slider Widget -->
+                        <div class="card"
+                            style="padding: 0.4rem 0.8rem; display: flex; align-items: center; gap: 0.8rem; border-radius: 20px; background: rgba(0,0,0,0.3);">
+                            <span style="font-size: 0.8rem; color: var(--color-text-muted);">Difficulty:</span>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <button onclick="adjustDifficulty(-1)"
+                                    style="background:none; border:none; color:white; cursor:pointer;">-</button>
+                                <div style="display: flex; gap: 2px;">
+                                    <div id="diff-bar-1"
+                                        style="width: 6px; height: 12px; background: var(--color-accent); border-radius: 2px;">
+                                    </div>
+                                    <div id="diff-bar-2"
+                                        style="width: 6px; height: 12px; background: var(--color-accent); border-radius: 2px;">
+                                    </div>
+                                    <div id="diff-bar-3"
+                                        style="width: 6px; height: 12px; background: rgba(255,255,255,0.2); border-radius: 2px;">
+                                    </div>
+                                </div>
+                                <button onclick="adjustDifficulty(1)"
+                                    style="background:none; border:none; color:white; cursor:pointer;">+</button>
+                            </div>
+                        </div>
+
+                        <!-- Focus Mode Toggle -->
+                        <button onclick="toggleFocusMode()" class="btn"
+                            style="padding: 0.4rem 1rem; font-size: 0.8rem; background: transparent; border: 1px solid rgba(255,255,255,0.2);">
+                            👁️ Focus Mode
+                        </button>
+                    </div>
+                </div>
+
+                <h1 style="font-size: 2.5rem; margin-top: 1rem;">
+                    <%= unit.title %>
+                </h1>
+            </header>
+
+            <!-- Video Section -->
+            <!-- Responsive Video Section -->
+            <% if (unit.youtube_url) { %>
+                <style>
+                    .video-container {
+                        position: relative;
+                        width: 100%;
+                        height: 0;
+                        padding-bottom: 56.25%;
+                        /* 16:9 Aspect Ratio */
+                        border-radius: var(--radius-md);
+                        overflow: hidden;
+                        border: 1px solid rgba(255, 255, 255, 0.1);
+                        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+                        margin-bottom: 2rem;
+                    }
+
+                    .video-container iframe {
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                    }
+                </style>
+                <div class="video-container">
+                    <iframe src="<%= unit.youtube_url %>" title="YouTube video player" frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        allowfullscreen>
+                    </iframe>
+                </div>
+
+                <!-- "Watch on YouTube" Redirect Button -->
+                <div style="text-align: center; margin-bottom: 2rem;">
+                    <% /* Convert Embed URL to Watch URL for the button */ let watchUrl=unit.youtube_url; if(watchUrl &&
+                        watchUrl.includes('/embed/')) { watchUrl=watchUrl.replace('/embed/', '/watch?v=' ); } %>
+                        <a href="<%= watchUrl %>" target="_blank" class="btn"
+                            style="background: #ff0000; border: none; display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none; color: white;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="white"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+                            </svg>
+                            Watch on YouTube
+                        </a>
+                </div>
+                <% } else { %>
+                    <!-- Fallback if no specific video is linked -->
+                    <div style="text-align: center; margin-bottom: 2rem;">
+                        <a href="https://www.youtube.com/results?search_query=<%= unit.title %>" target="_blank"
+                            class="btn"
+                            style="background: #ff0000; border: none; display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none; color: white;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="white"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+                            </svg>
+                            Find Lesson on YouTube
+                        </a>
+                    </div>
+                    <% } %>
+
+                        <div class="content-body" style="font-size: 1.125rem; line-height: 1.8;">
+                            <%- unit.content %>
+                        </div>
+
+                        <!-- AI Section -->
+                        <div class="card" style="margin-top: 3rem; border: var(--glass-border);">
+                            <h3 style="display: flex; align-items: center; gap: 0.5rem; color: var(--color-primary);">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M12 2a10 10 0 1 0 10 10H12V2z"></path>
+                                    <path d="M12 2a10 10 0 0 1 10 10"></path>
+                                    <path d="M12 22a10 10 0 0 1-10-10"></path>
+                                </svg>
+                                AI Practice Assistant
+                            </h3>
+                            <p style="margin-bottom: 1.5rem; font-size: 0.95rem;">Test your knowledge with AI-generated
+                                questions
+                                based on this unit.</p>
+
+                            <button id="generateBtn" class="btn"
+                                style="display: flex; align-items: center; gap: 0.5rem;">
+                                <span>✨ Generate Questions</span>
+                            </button>
+
+                            <div id="questionsContainer" style="margin-top: 1.5rem; display: none;">
+                                <div class="loader" style="color: var(--color-text-muted); font-size: 0.9rem;">
+                                    Generating
+                                    questions...</div>
+                            </div>
+                        </div>
+
+                        <div id="quizResults"
+                            style="display: none; margin-top: 2rem; animation: fadeInUp 0.5s ease-out;">
+                            <h3 style="color: var(--color-primary); margin-bottom: 1rem; text-align: center;">
+                                Performance
+                                Insights</h3>
+
+                            <div
+                                style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; align-items: start;">
+                                <!-- Chart Area -->
+                                <div class="card"
+                                    style="padding: 1rem; display: flex; align-items: center; justify-content: center; min-height: 200px;">
+                                    <div style="width: 150px; height: 150px;">
+                                        <canvas id="performanceChart"></canvas>
+                                    </div>
+                                </div>
+
+                                <!-- Detailed Stats Area -->
+                                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                                    <div class="card"
+                                        style="padding: 1rem; text-align: center; border: 1px solid rgba(139, 92, 246, 0.3);">
+                                        <div
+                                            style="font-size: 0.9rem; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 1px;">
+                                            Accuracy</div>
+                                        <div id="scoreDisplay"
+                                            style="font-size: 2.5rem; font-weight: 800; background: linear-gradient(to right, #fff, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                                            0%</div>
+                                    </div>
+
+                                    <div class="card" style="padding: 1rem; text-align: center;">
+                                        <div
+                                            style="font-size: 0.9rem; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 1px;">
+                                            Time Taken</div>
+                                        <div id="timeDisplay"
+                                            style="font-size: 1.8rem; font-weight: 600; color: white;">0s
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <p id="quizFeedback"
+                                style="text-align: center; margin-bottom: 2rem; font-size: 1.1rem; color: #e2e8f0;"></p>
+
+                            <!-- Action Buttons -->
+                            <div style="display: flex; gap: 1rem; justify-content: center;">
+                                <button onclick="retryQuiz()" class="btn"
+                                    style="background: transparent; border: 1px solid rgba(255,255,255,0.2);">
+                                    ↺ Retry Same Questions
+                                </button>
+                                <!-- Note: The existing 'Generate Questions' button can be clicked again by the user at the top, but we can add a shortcut here -->
+                                <button onclick="document.getElementById('generateBtn').click()" class="btn">
+                                    🚀 Start Next Round
+                                </button>
+                            </div>
+                        </div>
+
+                        <script>
+                            let quizChart = null;
+                            let quizStartTime = null;
+                            let currentDifficulty = <%= unit.difficulty || 2 %>;
+
+                            // Initialize UI based on loaded difficulty
+                            updateDifficultyUI();
+
+                            function adjustDifficulty(change) {
+                                let newDiff = currentDifficulty + change;
+                                if (newDiff < 1) newDiff = 1;
+                                if (newDiff > 3) newDiff = 3;
+                                currentDifficulty = newDiff;
+                                updateDifficultyUI();
+                            }
+
+                            function updateDifficultyUI() {
+                                const bars = [1, 2, 3];
+                                bars.forEach(i => {
+                                    const bar = document.getElementById(`diff-bar-${i}`);
+                                    if (bar) {
+                                        if (i <= currentDifficulty) {
+                                            bar.style.background = 'var(--color-accent)';
+                                        } else {
+                                            bar.style.background = 'rgba(255,255,255,0.2)';
+                                        }
+                                    }
+                                });
+                            }
+
+                            function toggleFocusMode() {
+                                const header = document.querySelector('.app-header');
+                                const unitContent = document.querySelector('.unit-content');
+
+                                if (header.style.display === 'none') {
+                                    header.style.display = 'block';
+                                    if (unitContent) unitContent.style.maxWidth = '900px';
+                                } else {
+                                    header.style.display = 'none';
+                                    if (unitContent) unitContent.style.maxWidth = '1000px'; // Expand slightly
+                                }
+                            }
+
+                            document.getElementById('generateBtn').addEventListener('click', async () => {
+                                const container = document.getElementById('questionsContainer');
+                                const btn = document.getElementById('generateBtn');
+                                const resultsArea = document.getElementById('quizResults');
+
+                                // Scroll to questions area smoothly so user sees the loader
+                                const scrollTarget = document.querySelector('.unit-content'); // Scroll to top of card
+                                if (scrollTarget) scrollTarget.scrollIntoView({ behavior: 'smooth' });
+
+                                // Reset UI
+                                container.style.display = 'block';
+                                resultsArea.style.display = 'none';
+                                container.innerHTML = '<div class="loader" style="color: var(--color-text-muted); font-size: 0.9rem; margin: 2rem 0;">🔮 Conjuring new challenges... (Level ' + currentDifficulty + ')</div>';
+                                btn.disabled = true;
+                                btn.style.opacity = '0.7';
+
+                                try {
+                                    const res = await fetch('/api/generate-questions', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({
+                                            topic: '<%= unit.title %>',
+                                            difficulty: currentDifficulty
+                                        })
+                                    });
+                                    const data = await res.json();
+
+                                    // Initialize Quiz State
+                                    window.currentQuizData = data.questions.map(q => ({ ...q, status: 'unanswered' }));
+                                    startQuiz();
+
+                                } catch (e) {
+                                    container.innerHTML = '<p style="color: #ff6b6b">Failed to generate quiz. Please try again.</p>';
+                                } finally {
+                                    btn.disabled = false;
+                                    btn.style.opacity = '1';
+                                }
+                            });
+
+                            function startQuiz() {
+                                quizStartTime = new Date();
+                                renderQuiz();
+                            }
+
+                            function renderQuiz() {
+                                const container = document.getElementById('questionsContainer');
+                                // Hide results if we are re-rendering (retrying)
+                                document.getElementById('quizResults').style.display = 'none';
+
+                                let html = '<div style="display: flex; flex-direction: column; gap: 1rem;">';
+
+                                window.currentQuizData.forEach((q, i) => {
+                                    // Handle case sensitivity and unexpected structures
+                                    const questionText = q.question || q.Question || (typeof q === 'string' ? q : JSON.stringify(q));
+                                    const answerText = q.answer || q.Answer || "Answer not available.";
+                                    let displayQuestion = questionText;
+                                    if (typeof questionText === 'object') {
+                                        displayQuestion = questionText.question || questionText.Question || "Error parsing question";
+                                    }
+
+                                    html += `
+                                <div id="q-card-${i}" style="
+                                    background: rgba(255,255,255,0.05); 
+                                    padding: 1.5rem; 
+                                    border-radius: var(--radius-md);
+                                    border: 1px solid rgba(255,255,255,0.05);
+                                    transition: all 0.3s ease;
+                                ">
+                                    <div style="font-weight: 500; margin-bottom: 1rem; font-size: 1.1rem;">
+                                        <span style="color: var(--color-accent); font-weight: bold; margin-right: 0.5rem;">Q${i + 1}</span> 
+                                        ${displayQuestion}
+                                    </div>
+
+                                    <div id="q-actions-${i}">
+                                        <button onclick="revealAnswer(${i})" style="
+                                            background: var(--color-primary);
+                                            border: none;
+                                            color: white;
+                                            padding: 0.5rem 1rem;
+                                            border-radius: 4px;
+                                            cursor: pointer;
+                                            font-size: 0.9rem;
+                                        ">👀 Reveal Answer</button>
+                                    </div>
+
+                                    <div id="q-answer-${i}" style="display: none; margin-top: 1rem; animation: fadeIn 0.3s;">
+                                        <div style="
+                                            padding: 1rem; 
+                                            background: rgba(34, 197, 94, 0.1); 
+                                            border-left: 3px solid #22c55e; 
+                                            border-radius: 4px;
+                                            margin-bottom: 1rem;
+                                            color: #dcfce7;
+                                        ">
+                                            <strong>Correct Answer:</strong><br>
+                                            ${answerText}
+                                        </div>
+                                        
+                                        <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                            <span style="font-size: 0.9rem; color: var(--color-text-muted);">How did you do?</span>
+                                            <button onclick="gradeQuestion(${i}, 'correct')" style="background: #22c55e; border: none; color: white; padding: 0.4rem 0.8rem; border-radius: 4px; cursor: pointer;">✅ I got it</button>
+                                            <button onclick="gradeQuestion(${i}, 'incorrect')" style="background: #ef4444; border: none; color: white; padding: 0.4rem 0.8rem; border-radius: 4px; cursor: pointer;">❌ Needs practice</button>
+                                        </div>
+                                    </div>
+                                </div>`;
+                                });
+                                html += '</div>';
+                                container.innerHTML = html;
+                            }
+
+                            window.retryQuiz = () => {
+                                // Reset statuses
+                                window.currentQuizData = window.currentQuizData.map(q => ({ ...q, status: 'unanswered' }));
+                                // Scroll to top of questions
+                                document.getElementById('questionsContainer').scrollIntoView({ behavior: 'smooth' });
+                                // Restart
+                                startQuiz();
+                            };
+
+                            window.revealAnswer = (index) => {
+                                document.getElementById(`q-actions-${index}`).style.display = 'none';
+                                document.getElementById(`q-answer-${index}`).style.display = 'block';
+                            };
+
+                            window.gradeQuestion = (index, result) => {
+                                window.currentQuizData[index].status = result;
+
+                                // Visual feedback
+                                const card = document.getElementById(`q-card-${index}`);
+                                if (result === 'correct') {
+                                    card.style.border = '1px solid #22c55e';
+                                    card.style.background = 'rgba(34, 197, 94, 0.05)';
+                                } else {
+                                    card.style.border = '1px solid #ef4444';
+                                    card.style.background = 'rgba(239, 68, 68, 0.05)';
+                                }
+
+                                // Disable buttons
+                                document.getElementById(`q-answer-${index}`).querySelector('div:last-child').innerHTML =
+                                    `<span style="color: ${result === 'correct' ? '#22c55e' : '#ef4444'}; font-weight: bold;">
+                                    ${result === 'correct' ? 'Marked Correct' : 'Marked for Review'}
+                                </span>`;
+
+                                checkQuizCompletion();
+                            };
+
+                            function checkQuizCompletion() {
+                                const completed = window.currentQuizData.filter(q => q.status !== 'unanswered');
+                                if (completed.length === window.currentQuizData.length) {
+                                    const endTime = new Date();
+                                    const timeTaken = Math.round((endTime - quizStartTime) / 1000); // in seconds
+                                    renderChart(timeTaken);
+                                }
+                            }
+
+                            function renderChart(timeTaken) {
+                                const correct = window.currentQuizData.filter(q => q.status === 'correct').length;
+                                const incorrect = window.currentQuizData.filter(q => q.status === 'incorrect').length;
+                                const total = window.currentQuizData.length;
+                                const percentage = Math.round((correct / total) * 100);
+
+                                // Update Stats UI
+                                document.getElementById('scoreDisplay').innerText = `${percentage}%`;
+                                document.getElementById('timeDisplay').innerText = `${timeTaken}s`;
+
+                                document.getElementById('quizResults').style.display = 'block';
+
+                                const ctx = document.getElementById('performanceChart').getContext('2d');
+
+                                if (quizChart) quizChart.destroy();
+
+                                quizChart = new Chart(ctx, {
+                                    type: 'doughnut',
+                                    data: {
+                                        labels: ['Mastered', 'Needs Review'],
+                                        datasets: [{
+                                            data: [correct, incorrect],
+                                            backgroundColor: ['#22c55e', '#ef4444'],
+                                            borderWidth: 0,
+                                            cutout: '70%', // Thinner ring
+                                        }]
+                                    },
+                                    options: {
+                                        responsive: true,
+                                        maintainAspectRatio: false,
+                                        plugins: {
+                                            legend: {
+                                                display: false // Hide legend to save space, colors are self-explanatory or use tooltips
+                                            },
+                                            tooltip: {
+                                                enabled: true
+                                            }
+                                        }
+                                    }
+                                });
+
+                                const feedback = document.getElementById('quizFeedback');
+                                if (percentage === 100) feedback.innerText = "🎉 Flawless Victory! You've mastered this concept.";
+                                else if (percentage >= 70) feedback.innerText = "👍 Great job! Just a few tweaks needed.";
+                                else feedback.innerText = "💪 Keep practicing. You learn more from mistakes!";
+
+                                // Scroll to results
+                                document.getElementById('quizResults').scrollIntoView({ behavior: 'smooth' });
+                            }
+                        </script>
+
+
+
+                        <div style="margin-top: 4rem; display: flex; justify-content: flex-end;">
+                            <button class="btn" onclick="alert('Unit marked as complete! (Prototype action)')">Mark as
+                                Complete</button>
+                        </div>
+        </div>
+    </div>
+
+    <%- include('partials/ai_video') %>
+        <%- include('partials/footer') %>
