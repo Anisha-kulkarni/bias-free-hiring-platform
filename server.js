@@ -4,6 +4,9 @@ const session = require('express-session');
 const db = require('./src/db'); // MySQL Pool
 const engine = require('./src/engine');
 const aiService = require('./src/aiService'); // Import AI Service
+const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
+const emailService = require('./utils/email');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -19,10 +22,13 @@ app.use(express.urlencoded({ extended: true }));
 
 // Session Middleware
 app.use(session({
-    secret: 'antigravity_secret_key_123', // In prod, use env var
+    secret: process.env.SESSION_SECRET || 'antigravity_secret_key_123',
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false } // Set true if using HTTPS
+    cookie: {
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    }
 }));
 
 // User Deserialization Middleware
@@ -36,6 +42,7 @@ app.use(async (req, res, next) => {
                     id: dbUser.id,
                     name: dbUser.name,
                     email: dbUser.email,
+                    isVerified: dbUser.is_verified,
                     preferences: {
                         learningStyle: dbUser.learning_style,
                         pacing: dbUser.pacing,
@@ -44,6 +51,7 @@ app.use(async (req, res, next) => {
                 };
                 res.locals.user = req.user;
             } else {
+                req.session.userId = null;
                 res.locals.user = null;
             }
         } catch (err) {
@@ -61,6 +69,10 @@ const requireAuth = (req, res, next) => {
     if (!req.user) {
         return res.redirect('/login');
     }
+    // Optional: Enforce verification
+    // if (!req.user.isVerified) {
+    //     return res.render('verify-email', { title: 'Verify Email', user: req.user, message: 'Please verify your email.' });
+    // }
     next();
 };
 
@@ -69,27 +81,52 @@ app.get('/', (req, res) => {
     res.render('landing', { title: 'Welcome | Antigravity Learning' });
 });
 
-// Login Routes
+// --- AUTH ROUTES ---
+
+// Login
 app.get('/login', (req, res) => {
-    res.render('login', { title: 'Login | Antigravity', error: null });
+    res.render('login', { title: 'Login | Antigravity', error: null, success: req.query.success });
 });
 
 app.post('/login', async (req, res) => {
     const { email, password } = req.body;
     try {
         const [rows] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
-        if (rows.length > 0) {
-            const user = rows[0];
-            // Simple password check (plaintext for demo as requested by "password123" default)
-            if (user.password === password) {
-                req.session.userId = user.id;
-                return res.redirect('/dashboard');
+        if (rows.length === 0) {
+            return res.render('login', { title: 'Login | Antigravity', error: 'Invalid email or password', success: null });
+        }
+
+        const user = rows[0];
+
+        // Check password (handle legacy plaintext if needed, but here we assume bcrypt or transition)
+        // If password starts with $2, it's bcrypt. Else it's component.
+        let match = false;
+        if (user.password.startsWith('$2')) {
+            match = await bcrypt.compare(password, user.password);
+        } else {
+            // Legacy plaintext fallback (should be removed in prod)
+            match = (user.password === password);
+            if (match) {
+                // Determine to upgrade hash? For now, let's keep it simple.
             }
         }
-        res.render('login', { title: 'Login | Antigravity', error: 'Invalid email or password' });
+
+        if (match) {
+            if (!user.is_verified) {
+                // We allow login but maybe show a banner? Or strict block?
+                // For this demo, we'll warn or just allow.
+                req.session.userId = user.id;
+                return res.redirect('/dashboard?info=unverified');
+            }
+
+            req.session.userId = user.id;
+            return res.redirect('/dashboard');
+        } else {
+            res.render('login', { title: 'Login | Antigravity', error: 'Invalid email or password', success: null });
+        }
     } catch (err) {
         console.error(err);
-        res.render('login', { title: 'Login | Antigravity', error: 'An error occurred' });
+        res.render('login', { title: 'Login | Antigravity', error: 'An error occurred during login', success: null });
     }
 });
 
@@ -99,13 +136,24 @@ app.get('/logout', (req, res) => {
     });
 });
 
-// Registration Routes
+// Register
 app.get('/register', (req, res) => {
     res.render('register', { title: 'Register | Antigravity', error: null });
 });
 
 app.post('/register', async (req, res) => {
-    const { name, email, password } = req.body;
+    const { name, email, password, confirmPassword } = req.body;
+
+    // Basic validation
+    if (password !== confirmPassword) {
+        return res.render('register', { title: 'Register | Antigravity', error: 'Passwords do not match' });
+    }
+
+    // Password strength (simple check)
+    if (password.length < 8) {
+        return res.render('register', { title: 'Register | Antigravity', error: 'Password must be at least 8 characters' });
+    }
+
     try {
         // Check if user exists
         const [existing] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
@@ -113,63 +161,145 @@ app.post('/register', async (req, res) => {
             return res.render('register', { title: 'Register | Antigravity', error: 'Email already in use' });
         }
 
-        // Insert new user
-        const id = 'u' + Date.now(); // Simple ID generation
+        const id = 'u' + Date.now();
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const verificationToken = crypto.randomBytes(32).toString('hex');
+
         await db.execute(
-            'INSERT INTO users (id, name, email, password, learning_style, pacing, current_level) VALUES (?, ?, ?, ?, ?, ?, ?)',
-            [id, name, email, password, 'visual', 'moderate', 1] // Defaults
+            'INSERT INTO users (id, name, email, password, learning_style, pacing, current_level, verification_token, is_verified) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [id, name, email, hashedPassword, 'visual', 'moderate', 1, verificationToken, false]
         );
 
-        // --- EMAIL SENDING LOGIC ---
-        const nodemailer = require("nodemailer");
+        // Send Email
+        await emailService.sendVerificationEmail(email, verificationToken, { name, id });
 
-        // Use credentials from .env
-        const emailUser = process.env.EMAIL_USER;
-        const emailPass = process.env.EMAIL_PASS;
+        // Show Verification Page
+        res.render('verification-sent', {
+            title: 'Verify Email | Student Portal',
+            email: email
+        });
 
-        if (emailUser && emailPass && emailUser !== 'your_gmail@gmail.com') {
-            try {
-                let transporter = nodemailer.createTransport({
-                    service: 'gmail',
-                    auth: {
-                        user: emailUser,
-                        pass: emailPass
-                    }
-                });
-
-                console.log(`[EMAIL] Attempting to send welcome email to ${email}...`);
-
-                await transporter.sendMail({
-                    from: `"Antigravity Learning" <${emailUser}>`,
-                    to: email,
-                    subject: "Welcome to Antigravity Learning! 🚀",
-                    html: `
-                        <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
-                            <h1 style="color: #7c3aed;">Welcome, ${name}!</h1>
-                            <p>We are thrilled to have you on board.</p>
-                            <p>You can verify your account and start learning immediately.</p>
-                            <br>
-                            <a href="http://localhost:3000/dashboard" style="padding: 12px 24px; background: #7c3aed; color: white; text-decoration: none; border-radius: 5px; font-weight: bold;">Go to Dashboard</a>
-                            <p style="margin-top: 20px; font-size: 0.8rem; color: #666;">If you didn't request this, please ignore this email.</p>
-                        </div>
-                    `,
-                });
-                console.log("[EMAIL] Sent successfully!");
-            } catch (emailErr) {
-                console.error("[EMAIL ERROR] Failed to send email:", emailErr.message);
-                // Do not block registration if email fails
-            }
-        } else {
-            console.log("[EMAIL SKIPPED] Email credentials not configured or are placeholders.");
-            console.log(`[SIMULATION] Would have sent to: ${email}`);
-        }
-
-        // Auto login
-        req.session.userId = id;
-        res.redirect('/placement'); // Redirect to placement for new users
     } catch (err) {
         console.error("Register Error:", err);
-        res.render('register', { title: 'Register | Antigravity', error: 'Registration failed' });
+        res.render('register', { title: 'Register | Antigravity', error: 'Registration failed due to server error' });
+    }
+});
+
+app.post('/resend-verification', async (req, res) => {
+    const { email } = req.body;
+    try {
+        const [rows] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
+        if (rows.length > 0) {
+            const user = rows[0];
+            if (!user.is_verified) {
+                // Generate new token if needed, or re-send existing if valid. 
+                // For simplicity, let's just re-send the current one if it exists, or logic to generate new.
+                // Re-generating is safer for expiration logic if we had it.
+                await emailService.sendVerificationEmail(email, user.verification_token, { name: user.name, id: user.id });
+            }
+        }
+        // Always show the page to prevent enumeration (or show success message)
+        res.render('verification-sent', {
+            title: 'Verify Email | Student Portal',
+            email: email
+        });
+    } catch (err) {
+        console.error(err);
+        res.redirect('/login');
+    }
+});
+
+// Verify Email
+app.get('/verify-email', async (req, res) => {
+    const { token } = req.query;
+    if (!token) return res.redirect('/login');
+
+    try {
+        const [rows] = await db.query('SELECT * FROM users WHERE verification_token = ?', [token]);
+        if (rows.length === 0) {
+            return res.render('login', { title: 'Login', error: 'Invalid or expired verification token.', success: null });
+        }
+
+        const user = rows[0];
+        await db.query('UPDATE users SET is_verified = TRUE, verification_token = NULL WHERE id = ?', [user.id]);
+
+        res.render('login', { title: 'Login', error: null, success: 'Email verified! You can now log in.' });
+    } catch (err) {
+        console.error("Verification Error:", err);
+        res.redirect('/login');
+    }
+});
+
+// Forgot Password
+app.get('/forgot-password', (req, res) => {
+    res.render('forgot-password', { title: 'Reset Password', error: null, message: null });
+});
+
+app.post('/forgot-password', async (req, res) => {
+    const { email } = req.body;
+    try {
+        const [rows] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
+        if (rows.length === 0) {
+            // For security, don't reveal existence
+            return res.render('forgot-password', { title: 'Reset Password', error: null, message: 'If an account exists, a reset link has been sent.' });
+        }
+
+        const user = rows[0];
+        const token = crypto.randomBytes(32).toString('hex');
+        const expires = new Date(Date.now() + 3600000); // 1 hour
+
+        await db.query('UPDATE users SET reset_token = ?, reset_token_expires = ? WHERE id = ?', [token, expires, user.id]);
+
+        await emailService.sendPasswordResetEmail(email, token, { name: user.name, id: user.id });
+
+        res.render('forgot-password', { title: 'Reset Password', error: null, message: 'If an account exists, a reset link has been sent.' });
+    } catch (err) {
+        console.error("Forgot Password Error:", err);
+        res.render('forgot-password', { title: 'Reset Password', error: 'Error sending email', message: null });
+    }
+});
+
+// Reset Password Page
+app.get('/reset-password/:token', async (req, res) => {
+    const { token } = req.params;
+    try {
+        const [rows] = await db.query('SELECT * FROM users WHERE reset_token = ? AND reset_token_expires > NOW()', [token]);
+        if (rows.length === 0) {
+            return res.render('forgot-password', { title: 'Reset Password', error: 'Password reset link is invalid or has expired.', message: null });
+        }
+        res.render('reset-password', { title: 'Set New Password', token, error: null });
+    } catch (err) {
+        res.redirect('/forgot-password');
+    }
+});
+
+app.post('/reset-password/:token', async (req, res) => {
+    const { token } = req.params;
+    const { password, confirmPassword } = req.body;
+
+    if (password !== confirmPassword) {
+        return res.render('reset-password', { title: 'Set New Password', token, error: 'Passwords do not match' });
+    }
+
+    if (password.length < 8) {
+        return res.render('reset-password', { title: 'Set New Password', token, error: 'Password must be at least 8 characters' });
+    }
+
+    try {
+        const [rows] = await db.query('SELECT * FROM users WHERE reset_token = ? AND reset_token_expires > NOW()', [token]);
+        if (rows.length === 0) {
+            return res.render('forgot-password', { title: 'Reset Password', error: 'Link expired.', message: null });
+        }
+
+        const user = rows[0];
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        await db.query('UPDATE users SET password = ?, reset_token = NULL, reset_token_expires = NULL WHERE id = ?', [hashedPassword, user.id]);
+
+        res.render('login', { title: 'Login', success: 'Password reset successfully. Please login.', error: null });
+    } catch (err) {
+        console.error("Reset Password Error:", err);
+        res.render('reset-password', { title: 'Set New Password', token, error: 'System error.' });
     }
 });
 
@@ -191,61 +321,6 @@ app.post('/placement-test', requireAuth, async (req, res) => {
     res.redirect('/dashboard');
 });
 
-// Forgot Password Routes
-app.get('/forgot-password', (req, res) => {
-    res.render('forgot-password', { title: 'Reset Password', error: null, message: null });
-});
-
-app.post('/forgot-password', async (req, res) => {
-    const { email } = req.body;
-    try {
-        const [users] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
-        if (users.length === 0) {
-            // Security: Don't reveal if user exists, but for UX in this demo might be useful.
-            // Let's pretend we sent it to avoid enumeration attacks, OR show error for demo clarity.
-            // For this specific user request, they want it to work, so let's be explicit if it fails for now.
-            return res.render('forgot-password', { title: 'Reset Password', error: 'No account found with that email.', message: null });
-        }
-
-        const user = users[0];
-        const nodemailer = require("nodemailer");
-        const emailUser = process.env.EMAIL_USER;
-        const emailPass = process.env.EMAIL_PASS;
-
-        // Send check
-        if (emailUser && emailPass && emailUser !== 'your_gmail@gmail.com') {
-            let transporter = nodemailer.createTransport({
-                service: 'gmail',
-                auth: { user: emailUser, pass: emailPass }
-            });
-
-            await transporter.sendMail({
-                from: `"Antigravity Support" <${emailUser}>`,
-                to: email,
-                subject: "Password Reset Request 🔐",
-                html: `
-                    <div style="font-family: Arial; padding: 20px; color: #333;">
-                        <h2 style="color: #7c3aed;">Reset Your Password</h2>
-                        <p>Hi ${user.name},</p>
-                        <p>We received a request to reset your password.</p>
-                        <a href="http://localhost:3000/reset-password/${user.id}" style="padding: 10px 20px; background: #7c3aed; color: white; border-radius: 5px; text-decoration: none;">Reset Password</a>
-                        <p style="font-size: 0.8rem; margin-top: 20px;">If this wasn't you, please ignore this email.</p>
-                    </div>
-                `
-            });
-            console.log(`[EMAIL] Password reset sent to ${email}`);
-        } else {
-            console.log(`[SIMULATION] Password reset link for ${email}: http://localhost:3000/reset-password/${user.id}`);
-        }
-
-        res.render('forgot-password', { title: 'Reset Password', error: null, message: 'If an account exists, a reset link has been sent to your email.' });
-
-    } catch (err) {
-        console.error("Forgot Password Error:", err);
-        res.render('forgot-password', { title: 'Reset Password', error: 'Something went wrong. Try again.', message: null });
-    }
-});
-
 app.get('/dashboard', requireAuth, async (req, res) => {
     try {
         const learningPath = await engine.generatePath(req.user.preferences);
@@ -256,8 +331,10 @@ app.get('/dashboard', requireAuth, async (req, res) => {
             calculus: 20
         };
 
-        console.log("Rendering dashboard for user:", req.user.email);
-        // console.log("Stats:", masteryStats); 
+        // Check verification for UI notice
+        if (!req.user.isVerified) {
+            // Could pass a flag to view
+        }
 
         res.render('dashboard', {
             title: 'Dashboard | Antigravity',
@@ -272,12 +349,9 @@ app.get('/dashboard', requireAuth, async (req, res) => {
 
 app.get('/unit/:id', requireAuth, async (req, res) => {
     try {
-        // Increment views
         try {
             await db.query('UPDATE units SET views = views + 1 WHERE id = ?', [req.params.id]);
-        } catch (e) {
-            // Ignore if column missing 
-        }
+        } catch (e) { }
 
         const [rows] = await db.query('SELECT * FROM units WHERE id = ?', [req.params.id]);
         const unit = rows[0];
@@ -290,20 +364,15 @@ app.get('/unit/:id', requireAuth, async (req, res) => {
     }
 });
 
-// AI Question Generator (Uses Real AI Service)
+// AI Question Generator
 app.post('/api/generate-questions', requireAuth, async (req, res) => {
     try {
         const { topic, difficulty } = req.body;
-
-        // Call AI Service
         const questions = await aiService.generateQuestions(topic, difficulty || 2);
-
-        // Store in Database
         await db.execute(
             'INSERT INTO generated_questions (user_id, topic, questions) VALUES (?, ?, ?)',
             [req.session.userId, topic, JSON.stringify(questions)]
         );
-
         res.json({ questions });
     } catch (err) {
         console.error("AI Generation Error:", err);
@@ -311,20 +380,15 @@ app.post('/api/generate-questions', requireAuth, async (req, res) => {
     }
 });
 
-// Chat API (Uses Real AI Service)
+// Chat API
 app.post('/api/chat', requireAuth, async (req, res) => {
     try {
         const { message, contextUnit } = req.body;
-
-        // Call AI Service
         const aiResponse = await aiService.getChatResponse(message, contextUnit);
-
-        // Store interaction
         await db.execute(
             'INSERT INTO ai_chat_history (user_id, message_from_user, message_from_ai, context_unit) VALUES (?, ?, ?, ?)',
             [req.session.userId, message, aiResponse, contextUnit || null]
         );
-
         res.json({ response: aiResponse });
     } catch (err) {
         console.error("Chat Error:", err);
@@ -335,8 +399,6 @@ app.post('/api/chat', requireAuth, async (req, res) => {
 app.get('/teacher', requireAuth, async (req, res) => {
     try {
         const [usersRows] = await db.query('SELECT * FROM users');
-
-        // Adapt rows for view
         const adaptUsers = usersRows.map(u => ({
             name: u.name,
             email: u.email,
@@ -380,7 +442,6 @@ app.get('/settings', requireAuth, (req, res) => {
 app.post('/settings/profile', requireAuth, async (req, res) => {
     const { name, email } = req.body;
     try {
-        // Check if email is taken by another user
         const [existing] = await db.query('SELECT * FROM users WHERE email = ? AND id != ?', [email, req.user.id]);
         if (existing.length > 0) {
             return res.redirect('/settings?error=Email already in use by another account');
@@ -418,14 +479,15 @@ app.post('/settings/password', requireAuth, async (req, res) => {
         return res.redirect('/settings?error=Passwords do not match');
     }
 
-    if (password.length < 6) {
-        return res.redirect('/settings?error=Password must be at least 6 characters');
+    if (password.length < 8) {
+        return res.redirect('/settings?error=Password must be at least 8 characters');
     }
 
     try {
+        const hashedPassword = await bcrypt.hash(password, 10);
         await db.execute(
             'UPDATE users SET password = ? WHERE id = ?',
-            [password, req.user.id]
+            [hashedPassword, req.user.id]
         );
         res.redirect('/settings?success=Password changed successfully');
     } catch (err) {

@@ -1,26 +1,135 @@
 <%- include('partials/header') %>
 
-    <div class="hero" style="text-align: center; padding: 6rem 0;">
+    <!-- Hero Section -->
+    <section class="hero" style="text-align: center; padding: 8rem 0 6rem; position: relative;">
+        <!-- Floating background elements could go here -->
         <div class="container">
-            <h1 style="font-size: 3.5rem; margin-bottom: 1.5rem;">
+            <h1 style="font-size: 4rem; margin-bottom: 1.5rem; line-height: 1.2;">
                 <span
                     style="background: linear-gradient(to right, #fff, #aaa); -webkit-background-clip: text; background-clip: text; color: transparent;">
                     Personalized Learning
                 </span>
                 <br>
-                <span style="color: var(--color-primary)">Reimagined.</span>
+                <span
+                    style="color: var(--color-primary); text-shadow: 0 0 30px rgba(124, 58, 237, 0.5);">Reimagined.</span>
             </h1>
-            <p style="font-size: 1.25rem; color: var(--color-text-muted); max-width: 600px; margin: 0 auto 2.5rem;">
+            <p style="font-size: 1.25rem; color: var(--color-text-muted); max-width: 600px; margin: 0 auto 3rem;">
                 Adaptive pacing, tailored content, and AI-driven insights to keep you engaged and on track.
+                Experience education that revolves around <strong>you</strong>.
             </p>
-            <div class="cta-group">
+            <div class="cta-group" style="display: flex; gap: 1rem; justify-content: center;">
                 <% if (typeof user !=='undefined' && user) { %>
                     <a href="/dashboard" class="btn">Go to Dashboard</a>
                     <% } else { %>
                         <a href="/login" class="btn">Start Your Journey</a>
+                        <a href="#features" class="btn"
+                            style="background: transparent; border: 1px solid rgba(255,255,255,0.2); box-shadow: none;">Learn
+                            More</a>
                         <% } %>
             </div>
         </div>
-    </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="section-padding"
+        style="background: linear-gradient(180deg, transparent, rgba(0,0,0,0.3));">
+        <div class="container">
+            <h2 class="section-title">Why Antigravity?</h2>
+
+            <div class="grid-3">
+                <div class="feature-card">
+                    <div class="feature-icon">🚀</div>
+                    <h3>Adaptive Pacing</h3>
+                    <p>The platform learns your speed and adjusts content difficulty in real-time. No more getting left
+                        behind or feeling bored.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🤖</div>
+                    <h3>AI Mentor</h3>
+                    <p>Get instant feedback and personalized explanations from our advanced AI tutor, available 24/7 to
+                        guide you.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>Deep Insights</h3>
+                    <p>Track your mastery with detailed analytics. Visualize your progress in Algebra, Geometry, and
+                        more with interactive charts.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Reviews / Testimonials Section -->
+    <section class="section-padding">
+        <div class="container">
+            <h2 class="section-title">What Our Learners Say</h2>
+
+            <div class="grid-3">
+                <!-- Review 1 -->
+                <div class="review-card">
+                    <div class="stars">★★★★★</div>
+                    <div class="quote" style="margin-bottom: 1.5rem;">
+                        "This platform completely changed how I study for Physics. The AI mentor explained concepts in a
+                        way my teacher never did!"
+                    </div>
+                    <div class="review-header">
+                        <div class="avatar">SJ</div>
+                        <div class="review-info">
+                            <h4>Sarah Jenkins</h4>
+                            <span>High School Student</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Review 2 -->
+                <div class="review-card" style="transform: translateY(-20px);">
+                    <!-- Slight offset for visual interest -->
+                    <div class="stars">★★★★★</div>
+                    <div class="quote" style="margin-bottom: 1.5rem;">
+                        "I used to struggle with pacing, but Antigravity adapts to me. I feel so much more confident in
+                        my Math skills now."
+                    </div>
+                    <div class="review-header">
+                        <div class="avatar" style="background: linear-gradient(135deg, #22d3ee, #3b82f6);">MR</div>
+                        <div class="review-info">
+                            <h4>Marcus Rodriguez</h4>
+                            <span>Engineering Fresher</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Review 3 -->
+                <div class="review-card">
+                    <div class="stars">★★★★☆</div>
+                    <div class="quote" style="margin-bottom: 1.5rem;">
+                        "The dashboard is beautiful and the gamification keeps me motivated. I actually look forward to
+                        my study sessions."
+                    </div>
+                    <div class="review-header">
+                        <div class="avatar" style="background: linear-gradient(135deg, #e879f9, #ec4899);">AL</div>
+                        <div class="review-info">
+                            <h4>Emily Chen</h4>
+                            <span>Lifelong Learner</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Final CTA -->
+    <section class="section-padding" style="text-align: center;">
+        <div class="container">
+            <div class="card"
+                style="max-width: 800px; margin: 0 auto; background: linear-gradient(135deg, rgba(124, 58, 237, 0.2), rgba(0,0,0,0)); border: 1px solid var(--color-primary);">
+                <h2 style="font-size: 2rem; margin-bottom: 1rem;">Ready to Defy Gravity?</h2>
+                <p style="margin-bottom: 2rem; color: var(--color-text-muted);">Join thousands of learners reaching new
+                    heights today.</p>
+                <a href="/register" class="btn" style="padding: 1rem 3rem; font-size: 1.2rem;">Get Started for Free</a>
+            </div>
+        </div>
+    </section>
 
     <%- include('partials/footer') %>

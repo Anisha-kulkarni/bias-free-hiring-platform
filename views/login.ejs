@@ -18,56 +18,89 @@
             box-shadow: 0 20px 50px -20px rgba(0,0,0,0.5);
         ">
 
-            <% if (typeof error !=='undefined' && error) { %>
+            <% if (typeof success !=='undefined' && success) { %>
                 <div
-                    style="background: rgba(255, 50, 50, 0.1); border: 1px solid rgba(255, 50, 50, 0.3); color: #ff6b6b; padding: 0.75rem; border-radius: var(--radius-sm); margin-bottom: 1.5rem; font-size: 0.9rem; text-align: center;">
-                    <%= error %>
+                    style="background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.3); color: #4ade80; padding: 0.75rem; border-radius: var(--radius-sm); margin-bottom: 1.5rem; font-size: 0.9rem; text-align: center;">
+                    <%= success %>
                 </div>
                 <% } %>
 
-                    <div style="margin-bottom: 1.5rem;">
-                        <label
-                            style="display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem; color: var(--color-text-muted);">Email
-                            Address</label>
-                        <input type="email" name="email" required placeholder="alex@example.com" style="
-                    width: 100%; 
-                    padding: 0.875rem; 
-                    border-radius: var(--radius-sm); 
-                    border: 1px solid rgba(255,255,255,0.1); 
-                    background: rgba(0,0,0,0.2); 
-                    color: white;
-                    outline: none;
-                    transition: border-color 0.2s;
-                " onfocus="this.style.borderColor='var(--color-primary)'"
-                            onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
-                    </div>
-
-                    <div style="margin-bottom: 2rem;">
-                        <label
-                            style="display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem; color: var(--color-text-muted);">Password</label>
-                        <input type="password" name="password" required placeholder="••••••••" style="
-                    width: 100%; 
-                    padding: 0.875rem; 
-                    border-radius: var(--radius-sm); 
-                    border: 1px solid rgba(255,255,255,0.1); 
-                    background: rgba(0,0,0,0.2); 
-                    color: white;
-                    outline: none;
-                    transition: border-color 0.2s;
-                " onfocus="this.style.borderColor='var(--color-primary)'"
-                            onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
-                        <div style="text-align: right; margin-top: 0.5rem;">
-                            <a href="/forgot-password" style="font-size: 0.8rem; color: var(--color-primary);">Forgot
-                                password?</a>
+                    <% if (typeof error !=='undefined' && error) { %>
+                        <div
+                            style="background: rgba(255, 50, 50, 0.1); border: 1px solid rgba(255, 50, 50, 0.3); color: #ff6b6b; padding: 0.75rem; border-radius: var(--radius-sm); margin-bottom: 1.5rem; font-size: 0.9rem; text-align: center;">
+                            <%= error %>
                         </div>
-                    </div>
+                        <% } %>
 
-                    <button type="submit" class="btn" style="width: 100%; padding: 1rem;">Sign In</button>
+                            <div style="margin-bottom: 1.5rem;">
+                                <label
+                                    style="display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem; color: var(--color-text-muted);">Email
+                                    Address</label>
+                                <input type="email" name="email" required placeholder="alex@example.com" style="
+                    width: 100%; 
+                    padding: 0.875rem; 
+                    border-radius: var(--radius-sm); 
+                    border: 1px solid rgba(255,255,255,0.1); 
+                    background: rgba(0,0,0,0.2); 
+                    color: white;
+                    outline: none;
+                    transition: border-color 0.2s;
+                " onfocus="this.style.borderColor='var(--color-primary)'"
+                                    onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
+                            </div>
 
-                    <div style="margin-top: 1.5rem; text-align: center; font-size: 0.9rem;">
-                        <span style="color: var(--color-text-muted);">New here?</span>
-                        <a href="/register">Create account</a>
-                    </div>
+                            <div style="margin-bottom: 2rem;">
+                                <label
+                                    style="display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem; color: var(--color-text-muted);">Password</label>
+                                <div style="position: relative;">
+                                    <input type="password" name="password" id="loginPassword" required
+                                        placeholder="••••••••" style="
+                                        width: 100%; 
+                                        padding: 0.875rem; 
+                                        padding-right: 2.5rem;
+                                        border-radius: var(--radius-sm); 
+                                        border: 1px solid rgba(255,255,255,0.1); 
+                                        background: rgba(0,0,0,0.2); 
+                                        color: white;
+                                        outline: none;
+                                        transition: border-color 0.2s;
+                                    " onfocus="this.style.borderColor='var(--color-primary)'"
+                                        onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
+
+                                    <button type="button"
+                                        onclick="document.getElementById('loginPassword').type = document.getElementById('loginPassword').type === 'password' ? 'text' : 'password'"
+                                        style="
+                                        position: absolute;
+                                        right: 10px;
+                                        top: 50%;
+                                        transform: translateY(-50%);
+                                        background: none;
+                                        border: none;
+                                        color: var(--color-text-muted);
+                                        cursor: pointer;
+                                        padding: 0;
+                                    ">👁️</button>
+                                </div>
+                                <div
+                                    style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.8rem;">
+                                    <label
+                                        style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: var(--color-text-muted); cursor: pointer;">
+                                        <input type="checkbox" name="remember"
+                                            style="accent-color: var(--color-primary);"> Remember me
+                                    </label>
+                                    <div style="text-align: right;">
+                                        <a href="/forgot-password"
+                                            style="font-size: 0.8rem; color: var(--color-primary);">Forgot
+                                            password?</a>
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="btn" style="width: 100%; padding: 1rem;">Sign In</button>
+
+                                <div style="margin-top: 1.5rem; text-align: center; font-size: 0.9rem;">
+                                    <span style="color: var(--color-text-muted);">New here?</span>
+                                    <a href="/register">Create account</a>
+                                </div>
         </form>
     </div>
 

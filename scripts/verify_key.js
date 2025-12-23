@@ -15,15 +15,15 @@ async function testKey() {
 
     try {
         const genAI = new GoogleGenerativeAI(key);
-        console.log("Pinging Gemini API (gemini-pro)...");
+        console.log("Pinging Gemini API (gemini-2.5-flash)...");
         try {
-            const model = genAI.getGenerativeModel({ model: "gemini-pro" });
-            const result = await model.generateContent("Say 'Pro Working'");
+            const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+            const result = await model.generateContent("Say '2.5-Flash Working'");
             console.log("Response:", result.response.text());
-            console.log("✅ gemini-pro Connection Successful!");
+            console.log("✅ gemini-2.5-flash Connection Successful!");
             return;
         } catch (err) {
-            console.log("⚠️ gemini-pro failed:", err.message.split('[')[0]); // simplified log
+            console.log("⚠️ gemini-2.5-flash failed:", err.message.split('[')[0]); // simplified log
         }
 
         console.log("Pinging Gemini API (gemini-1.5-flash)...");

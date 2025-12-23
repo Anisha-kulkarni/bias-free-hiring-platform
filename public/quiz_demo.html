@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Quiz Master</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        dark: {
+                            bg: '#0f172a',
+                            card: '#1e293b',
+                            input: '#334155'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .anim-fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        .anim-slide-up {
+            animation: slideUp 0.5s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-900 text-gray-100 min-h-screen flex flex-col items-center py-12 px-4">
+
+    <!-- Header Section -->
+    <header class="text-center mb-10 max-w-2xl w-full">
+        <h1
+            class="text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-purple-500 mb-4 tracking-tight">
+            Interactive Quiz Master
+        </h1>
+        <p class="text-gray-400 text-lg">Test your Web Development knowledge with our adaptive AI-simulated engine.</p>
+    </header>
+
+    <!-- Main Control Panel -->
+    <main class="w-full max-w-3xl space-y-8 relative">
+
+        <!-- Controls Card -->
+        <div class="glass-panel rounded-2xl p-6 shadow-2xl shadow-indigo-500/10">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+
+                <!-- Difficulty Selector -->
+                <div class="flex items-center gap-4 bg-gray-800/50 p-2 rounded-xl border border-gray-700">
+                    <span class="text-sm font-medium text-gray-400 pl-2">Difficulty:</span>
+                    <button onclick="adjustDifficulty(-1)"
+                        class="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-700 hover:bg-gray-600 transition text-white font-bold">-</button>
+
+                    <div class="flex gap-1.5 h-6 items-center" id="difficulty-bars">
+                        <!-- Bars injected via JS -->
+                    </div>
+
+                    <span id="difficulty-label"
+                        class="text-sm font-semibold w-20 text-center text-indigo-400">Medium</span>
+                    <button onclick="adjustDifficulty(1)"
+                        class="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-700 hover:bg-gray-600 transition text-white font-bold">+</button>
+                </div>
+
+                <!-- Generate Button -->
+                <button onclick="generateQuiz()" id="btn-generate"
+                    class="w-full md:w-auto px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold rounded-xl shadow-lg shadow-indigo-500/30 transition-all transform hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                    Generate New Quiz
+                </button>
+            </div>
+        </div>
+
+        <!-- Quiz Container -->
+        <div id="quiz-container" class="space-y-6 hidden">
+            <!-- Dynamic Questions go here -->
+        </div>
+
+        <!-- Loading State -->
+        <div id="loader" class="hidden text-center py-12">
+            <div class="inline-block relative w-16 h-16">
+                <div class="absolute top-0 left-0 w-full h-full border-4 border-indigo-500/30 rounded-full"></div>
+                <div
+                    class="absolute top-0 left-0 w-full h-full border-4 border-indigo-500 rounded-full border-t-transparent animate-spin">
+                </div>
+            </div>
+            <p class="mt-4 text-indigo-300 font-medium animate-pulse">Conjuring questions...</p>
+        </div>
+
+        <!-- Results Section -->
+        <div id="results-panel"
+            class="hidden glass-panel rounded-2xl p-8 border-indigo-500/30 shadow-2xl shadow-purple-500/20 anim-slide-up">
+            <h2 class="text-3xl font-bold text-center mb-8 text-white">Quiz Results</h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <!-- Chart -->
+                <div class="relative h-64 w-full flex justify-center items-center">
+                    <canvas id="scoreChart"></canvas>
+                    <div class="absolute inset-0 flex items-center justify-center flex-col pointer-events-none">
+                        <span class="text-4xl font-black text-white" id="score-percentage">0%</span>
+                        <span class="text-xs text-gray-400 uppercase tracking-wider">Score</span>
+                    </div>
+                </div>
+
+                <!-- Stats -->
+                <div class="space-y-6">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-gray-800/50 p-4 rounded-xl border border-gray-700 text-center">
+                            <div class="text-sm text-gray-400 uppercase">Correct</div>
+                            <div class="text-2xl font-bold text-green-400" id="stat-correct">0/5</div>
+                        </div>
+                        <div class="bg-gray-800/50 p-4 rounded-xl border border-gray-700 text-center">
+                            <div class="text-sm text-gray-400 uppercase">Time</div>
+                            <div class="text-2xl font-bold text-blue-400" id="stat-time">0s</div>
+                        </div>
+                    </div>
+
+                    <div class="bg-indigo-900/20 p-4 rounded-xl border border-indigo-500/20 text-center">
+                        <p class="text-lg text-indigo-200 italic" id="feedback-msg">"Great job!"</p>
+                    </div>
+
+                    <button onclick="resetQuiz()"
+                        class="w-full py-3 bg-gray-700 hover:bg-gray-600 text-white font-medium rounded-xl transition border border-gray-600">
+                        Take Another Quiz
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // --- 1. Data Store ---
+        const questionsDatabase = [
+            // EASY (Level 1)
+            { id: 1, difficulty: 1, question: "What does HTML stand for?", options: ["Hyper Text Markup Language", "High Tech Modern Language", "Hyper Transfer Markup Language", "Home Tool Markup Language"], answer: "Hyper Text Markup Language", explanation: "HTML (HyperText Markup Language) is the standard markup language for documents designed to be displayed in a web browser." },
+            { id: 2, difficulty: 1, question: "Which HTML tag is used for the largest heading?", options: ["<h6>", "<head>", "<h1>", "<heading>"], answer: "<h1>", explanation: "<h1> defines the most important heading. <h6> defines the least important heading." },
+            { id: 3, difficulty: 1, question: "What is the correct CSS syntax to change text color?", options: ["color: red;", "text-color: red;", "fg-color: red;", "font-color: red;"], answer: "color: red;", explanation: "The 'color' property is used to set the color of the text." },
+            { id: 4, difficulty: 1, question: "Inside which HTML element do we put the JavaScript?", options: ["<js>", "<scripting>", "<script>", "<javascript>"], answer: "<script>", explanation: "The <script> tag is used to define a client-side script (JavaScript)." },
+            { id: 5, difficulty: 1, question: "Which character is used to indicate an end tag?", options: ["^", "<", "/", "*"], answer: "/", explanation: "End tags are distinguished from start tags by the slash character / before the tag name." },
+
+            // MEDIUM (Level 2)
+            { id: 6, difficulty: 2, question: "What acts as a container for all other HTML elements?", options: ["<body>", "<html>", "<head>", "<!DOCTYPE>"], answer: "<html>", explanation: "The <html> tag represents the root of an HTML document." },
+            { id: 7, difficulty: 2, question: "How do you select an element with id 'demo' in CSS?", options: [".demo", "#demo", "demo", "*demo"], answer: "#demo", explanation: "The id selector uses the hash (#) character to select a specific element." },
+            { id: 8, difficulty: 2, question: "Which event is triggered when a user clicks an HTML element?", options: ["onmouseover", "onchange", "onclick", "onmouseclick"], answer: "onclick", explanation: "The onclick event occurs when the user clicks on an element." },
+            { id: 9, difficulty: 2, question: "How do you declare a JavaScript variable?", options: ["v carName;", "variable carName;", "var carName;", "val carName;"], answer: "var carName;", explanation: "Variables are declared with the var, let, or const keywords." },
+            { id: 10, difficulty: 2, question: "What does the '=== ' operator do?", options: ["Assigns a value", "Compares value only", "Compares type and value", "Logical OR"], answer: "Compares type and value", explanation: "The strict quality operator (===) checks both value and data type." },
+
+            // HARD (Level 3)
+            { id: 11, difficulty: 3, question: "Which method removes the last element from an array?", options: ["shift()", "pop()", "push()", "splice()"], answer: "pop()", explanation: "The pop() method removes the last element from an array and returns that element." },
+            { id: 12, difficulty: 3, question: "What is the output of: console.log(typeof NaN)?", options: ["'number'", "'NaN'", "'undefined'", "'object'"], answer: "'number'", explanation: "In JavaScript, NaN (Not-a-Number) is surprisingly considered a type of number." },
+            { id: 13, difficulty: 3, question: "What does 'this' refer to in an arrow function?", options: ["The function itself", "The global object", "The enclosing lexical context", "Undefined"], answer: "The enclosing lexical context", explanation: "Arrow functions do not have their own 'this'. They inherit it from the parent scope (lexical scoping)." },
+            { id: 14, difficulty: 3, question: "Which CSS property controls the stacking order of elements?", options: ["z-index", "stack-order", "display", "position"], answer: "z-index", explanation: "The z-index property specifies the stack order of an element. An element with greater stack order is always in front of an element with a lower stack order." },
+            { id: 15, difficulty: 3, question: "What is a Closure in JavaScript?", options: ["A variable type", "A function bundled with its lexical environment", "A syntax error", "A design pattern"], answer: "A function bundled with its lexical environment", explanation: "A closure gives you access to an outer function's scope from an inner function." }
+        ];
+
+        // --- 2. State Management ---
+        let currentDifficulty = 2; // Default Medium
+        let activeQuizData = [];
+        let userAnswers = {}; // { questionIndex: optionString }
+        let startTime = null;
+        let chartInstance = null;
+        let isSubmitted = false;
+
+        // --- 3. UI Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            updateDifficultyUI();
+        });
+
+        const difficulties = { 1: 'Easy', 2: 'Medium', 3: 'Hard' };
+
+        // --- 4. Core Functions ---
+
+        function adjustDifficulty(change) {
+            let newDiff = currentDifficulty + change;
+            if (newDiff < 1) newDiff = 1;
+            if (newDiff > 3) newDiff = 3;
+            currentDifficulty = newDiff;
+            updateDifficultyUI();
+        }
+
+        function updateDifficultyUI() {
+            // Label
+            const labelEl = document.getElementById('difficulty-label');
+            labelEl.innerText = difficulties[currentDifficulty];
+
+            // Color coding
+            const colors = { 1: 'text-green-400', 2: 'text-indigo-400', 3: 'text-red-400' };
+            labelEl.className = `text-sm font-semibold w-20 text-center ${colors[currentDifficulty]}`;
+
+            // Bars
+            const barsContainer = document.getElementById('difficulty-bars');
+            barsContainer.innerHTML = '';
+            for (let i = 1; i <= 3; i++) {
+                const bar = document.createElement('div');
+                let bgClass = i <= currentDifficulty
+                    ? (currentDifficulty === 1 ? 'bg-green-500' : currentDifficulty === 2 ? 'bg-indigo-500' : 'bg-red-500')
+                    : 'bg-gray-700';
+
+                bar.className = `w-2 h-full rounded-sm transition-colors duration-300 ${bgClass}`;
+                barsContainer.appendChild(bar);
+            }
+        }
+
+        async function generateQuiz() {
+            // UI States
+            const btn = document.getElementById('btn-generate');
+            const container = document.getElementById('quiz-container');
+            const loader = document.getElementById('loader');
+            const results = document.getElementById('results-panel');
+
+            // Reset
+            isSubmitted = false;
+            userAnswers = {};
+            results.classList.add('hidden');
+            container.innerHTML = '';
+            container.classList.add('hidden');
+
+            // Loading Animation
+            btn.disabled = true;
+            btn.style.opacity = '0.5';
+            loader.classList.remove('hidden');
+
+            // Simulate API logic delay
+            await new Promise(r => setTimeout(r, 1200));
+
+            // Logic: Filter & Shuffle
+            const filtered = questionsDatabase.filter(q => q.difficulty === currentDifficulty);
+            // Simple shuffle
+            activeQuizData = filtered.sort(() => 0.5 - Math.random()).slice(0, 5);
+
+            if (activeQuizData.length === 0) {
+                alert("Not enough questions for this level.");
+                loader.classList.add('hidden');
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                return;
+            }
+
+            // Start Timer
+            startTime = new Date();
+
+            // Render
+            renderQuestions();
+
+            loader.classList.add('hidden');
+            container.classList.remove('hidden');
+            btn.disabled = false;
+            btn.style.opacity = '1';
+
+            // Smooth scroll
+            container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function renderQuestions() {
+            const container = document.getElementById('quiz-container');
+            let html = '';
+
+            activeQuizData.forEach((q, index) => {
+                html += `
+                <div id="card-${index}" class="glass-panel p-6 rounded-2xl anim-slide-up" style="animation-delay: ${index * 100}ms">
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="text-lg font-semibold text-gray-100">
+                            <span class="text-indigo-400 mr-2">Q${index + 1}.</span> ${q.question}
+                        </h3>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        ${q.options.map((opt, optIndex) => `
+                            <button 
+                                onclick="selectOption(${index}, '${opt.replace(/'/g, "\\'")}')"
+                                id="btn-${index}-${optIndex}"
+                                class="option-btn group text-left px-4 py-3 rounded-xl border border-gray-700 bg-gray-800/40 hover:bg-gray-700/60 hover:border-indigo-500/50 transition-all duration-200"
+                            >
+                                <span class="text-xs font-bold text-gray-500 mr-2 group-hover:text-indigo-300 transition-colors uppercase tracking-wider">${String.fromCharCode(65 + optIndex)}</span>
+                                <span class="text-gray-300">${opt}</span>
+                            </button>
+                        `).join('')}
+                    </div>
+
+                    <div id="feedback-${index}" class="hidden mt-4 p-4 rounded-xl text-sm animate-fade-in"></div>
+                </div>
+                `;
+            });
+
+            // Submit Button
+            html += `
+                <div class="py-4 flex justify-end">
+                    <button onclick="submitQuiz()" class="px-8 py-3 bg-green-600 hover:bg-green-500 text-white font-bold rounded-xl shadow-lg shadow-green-900/20 transition transform hover:-translate-y-1">
+                        Submit Answers
+                    </button>
+                </div>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        function selectOption(questionIndex, selectedValue) {
+            if (isSubmitted) return; // Lock after submit
+
+            // Store selection
+            userAnswers[questionIndex] = selectedValue;
+
+            // Visual Update
+            const card = document.getElementById(`card-${questionIndex}`);
+            const buttons = card.querySelectorAll('.option-btn');
+
+            buttons.forEach(btn => {
+                // Check if this button's text content matches selection (this is a simple check, usually by ID is safer but text works for this content)
+                // Actually, let's just reset all styles
+                btn.classList.remove('bg-indigo-600', 'border-indigo-400', 'ring-2', 'ring-indigo-500/50', 'text-white');
+                btn.classList.add('bg-gray-800/40', 'border-gray-700');
+
+                // If it's the clicked one (we can find it by verifying the text inside vs selectedValue)
+                // A safer way is to trust the clicked element. But here we have the value. 
+                // Let's iterate options again or easier: we know activeQuizData[questionIndex].options
+            });
+
+            // Find the specific button to highlight
+            // We use the ID convention btn-{qIdx}-{optIdx}
+            const q = activeQuizData[questionIndex];
+            const optIdx = q.options.indexOf(selectedValue);
+            if (optIdx > -1) {
+                const activeBtn = document.getElementById(`btn-${questionIndex}-${optIdx}`);
+                activeBtn.classList.remove('bg-gray-800/40', 'border-gray-700');
+                activeBtn.classList.add('bg-indigo-600', 'border-indigo-400', 'text-white', 'shadow-lg');
+            }
+        }
+
+        function submitQuiz() {
+            if (Object.keys(userAnswers).length < activeQuizData.length) {
+                if (!confirm("You haven't answered all questions. Submit anyway?")) return;
+            }
+
+            isSubmitted = true;
+            let correctCount = 0;
+
+            activeQuizData.forEach((q, i) => {
+                const feedbackEl = document.getElementById(`feedback-${i}`);
+                feedbackEl.classList.remove('hidden');
+
+                const userChoice = userAnswers[i];
+                const isCorrect = userChoice === q.answer;
+
+                if (isCorrect) {
+                    correctCount++;
+                    feedbackEl.className = "mt-4 p-4 rounded-xl text-sm bg-green-500/10 border border-green-500/30 text-green-300";
+                    feedbackEl.innerHTML = `<strong>✅ Correct!</strong> ${q.explanation}`;
+                } else {
+                    feedbackEl.className = "mt-4 p-4 rounded-xl text-sm bg-red-500/10 border border-red-500/30 text-red-300";
+                    feedbackEl.innerHTML = `<strong>❌ Incorrect.</strong> The correct answer was: <span class="font-bold underline">${q.answer}</span>. <br><span class="opacity-80 mt-1 block">${q.explanation}</span>`;
+                }
+
+                // Lock buttons visual
+                const optionsObj = q.options;
+                optionsObj.forEach((opt, optIdx) => {
+                    const btn = document.getElementById(`btn-${i}-${optIdx}`);
+                    btn.classList.add('opacity-50', 'cursor-not-allowed');
+                    btn.onclick = null; // Disable click
+
+                    // Highlight correct one strongly
+                    if (opt === q.answer) {
+                        btn.classList.remove('opacity-50', 'bg-gray-800/40', 'border-gray-700');
+                        btn.classList.add('bg-green-600/20', 'border-green-500', 'text-green-200');
+                    }
+                    // Highlight user's wrong choice
+                    if (opt === userChoice && !isCorrect) {
+                        btn.classList.remove('bg-indigo-600');
+                        btn.classList.add('bg-red-600/20', 'border-red-500');
+                    }
+                });
+            });
+
+            // Calculate Stats
+            const total = activeQuizData.length;
+            const percentage = Math.round((correctCount / total) * 100);
+
+            const endTime = new Date();
+            const timeTaken = Math.round((endTime - startTime) / 1000);
+
+            showResults(correctCount, total, timeTaken, percentage);
+        }
+
+        function showResults(correct, total, time, percentage) {
+            const panel = document.getElementById('results-panel');
+            panel.classList.remove('hidden');
+
+            // Scroll to results
+            setTimeout(() => {
+                panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 300);
+
+            // Update Text
+            document.getElementById('score-percentage').innerText = `${percentage}%`;
+            document.getElementById('stat-correct').innerText = `${correct}/${total}`;
+            document.getElementById('stat-time').innerText = `${time}s`;
+
+            const feedbackMsg = document.getElementById('feedback-msg');
+            if (percentage === 100) feedbackMsg.innerText = "🎉 Unstoppable! Perfect Score!";
+            else if (percentage >= 80) feedbackMsg.innerText = "💪 Awesome job! You know your stuff.";
+            else if (percentage >= 60) feedbackMsg.innerText = "👍 Good effort! Getting there.";
+            else feedbackMsg.innerText = "📚 Keep learning! You'll master it soon.";
+
+            // Render Chart
+            const ctx = document.getElementById('scoreChart').getContext('2d');
+            if (chartInstance) chartInstance.destroy();
+
+            chartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Correct', 'Incorrect'],
+                    datasets: [{
+                        data: [correct, total - correct],
+                        backgroundColor: ['#4ade80', '#ef4444'], // green-400, red-500
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '75%',
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { enabled: true }
+                    }
+                }
+            });
+        }
+
+        function resetQuiz() {
+            // Simply generate new one, or reset to prompt state
+            // Let's scroll to top and clear container
+            document.getElementById('quiz-container').classList.add('hidden');
+            document.getElementById('results-panel').classList.add('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+    </script>
+</body>
+
+</html>

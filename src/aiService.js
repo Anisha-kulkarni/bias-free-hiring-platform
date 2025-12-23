@@ -22,22 +22,28 @@ async function generateQuestions(topic, difficulty = 2) {
             topP: 0.95,
             topK: 40,
         };
-        const model = genAI.getGenerativeModel({ model: "gemini-pro", generationConfig });
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash", generationConfig });
 
         const difficultyText = difficulty === 1 ? "beginner/introductory" : (difficulty === 3 ? "expert/advanced" : "intermediate");
 
         const randomSeed = Math.floor(Math.random() * 100000); // Increased randomness range
-        const prompt = `Act as an expert tutor. Generate 3 UNIQUE, ${difficultyText} level practice questions specifically about the topic: "${topic}".
+        const prompt = `Act as an expert tutor. Generate 3 UNIQUE, ${difficultyText} level multiple-choice questions specifically about the topic: "${topic}".
                         
                         Requirements:
                         1. Questions must be directly related to the key concepts of "${topic}".
                         2. The difficulty level must be ${difficultyText}.
-                        3. For each question, provide the "answer" which must be a clear, accurate explanation of the correct solution.
-                        4. Ensure the answer is directly related to the specific question asked.
+                        3. Provide 4 distinct options for each question.
+                        4. Clearly indicate the correct answer (it must be one of the options).
+                        5. Provide a brief explanation for why the answer is correct.
                         
                         Output strictly as a JSON array of objects with this format:
                         [
-                            { "question": "The question text here?", "answer": "The detailed correct answer and explanation here." }
+                            { 
+                                "question": "The question text?", 
+                                "options": ["Option A", "Option B", "Option C", "Option D"], 
+                                "correct_answer": "Option B",
+                                "explanation": "Why B is correct." 
+                            }
                         ]
                         
                         Random Seed: ${randomSeed}`;
@@ -46,28 +52,47 @@ async function generateQuestions(topic, difficulty = 2) {
         const response = await result.response;
         const text = response.text();
 
-        // Clean up text to ensure it's valid JSON
-        const cleanedText = text.replace(/```json/g, '').replace(/```/g, '').trim();
+        // Robust JSON Extraction: Find the array [...]
+        const jsonMatch = text.match(/\[[\s\S]*\]/);
+        if (!jsonMatch) {
+            console.error("AI did not return a valid JSON array. Response:", text);
+            throw new Error("Invalid JSON structure");
+        }
+
+        const cleanedText = jsonMatch[0];
         let parsedData = JSON.parse(cleanedText);
 
         // Robustness: Ensure we have an array
         if (!Array.isArray(parsedData)) {
-            // Did the AI wrap it in { "questions": [...] }?
             if (parsedData.questions && Array.isArray(parsedData.questions)) {
                 parsedData = parsedData.questions;
             } else if (parsedData.data && Array.isArray(parsedData.data)) {
                 parsedData = parsedData.data;
             } else {
-                // Fallback: Try to wrap it if it's a single object
                 parsedData = [parsedData];
             }
         }
 
-        // Normalization: Ensure lowercase keys 'question' and 'answer'
-        return parsedData.map(item => ({
-            question: item.question || item.Question || "Question missing",
-            answer: item.answer || item.Answer || "Answer missing"
-        }));
+        // Normalization: Ensure items are valid objects with expected keys
+        return parsedData.map(item => {
+            // Helper to find a value case-insensitively
+            const getVal = (obj, keys) => {
+                for (const k of keys) {
+                    if (obj[k]) return obj[k];
+                    const lowerK = k.toLowerCase();
+                    const found = Object.keys(obj).find(ok => ok.toLowerCase() === lowerK);
+                    if (found) return obj[found];
+                }
+                return null;
+            };
+
+            return {
+                question: getVal(item, ['question', 'q', 'text']) || "Question text unavailable",
+                options: getVal(item, ['options', 'choices', 'answers']) || [],
+                answer: getVal(item, ['correct_answer', 'answer', 'correct']) || "",
+                explanation: getVal(item, ['explanation', 'reason']) || ""
+            };
+        });
 
     } catch (error) {
         console.error("Gemini API Error:", error.message);
@@ -84,7 +109,7 @@ async function getChatResponse(message, contextUnit) {
 
     try {
         // 2. Call Real API
-        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
         const prompt = `You are a helpful AI tutor for a learning platform. 
                         The student is currently viewing the unit: "${contextUnit}".
                         
@@ -107,15 +132,21 @@ function getMockQuestions(topic) {
     return [
         {
             question: `What is the core concept of ${topic}?`,
-            answer: `The core concept involves the fundamental principles that define ${topic}.`
+            options: [`The fundamental principles of ${topic}`, `Advanced calculus`, `Historical events`, `Cooking recipes`],
+            answer: `The fundamental principles of ${topic}`,
+            explanation: `This is the definition of a core concept.`
         },
         {
             question: `How would you apply ${topic} in a real-world scenario?`,
-            answer: `It is applied by analyzing the problem constraints and using ${topic} models to solve it.`
+            options: [`By ignoring it`, `Using constraints and models`, `Only in theory`, `By guessing`],
+            answer: `Using constraints and models`,
+            explanation: `Real-world application requires analysis of constraints.`
         },
         {
-            question: `Describe the relationship between ${topic} and foundational principles.`,
-            answer: `It builds upon basic axiomes to create complex systems.`
+            question: `Which of these is related to ${topic}?`,
+            options: [`Foundational Axioms`, `Unrelated Fact`, `Random Noise`, `False Statement`],
+            answer: `Foundational Axioms`,
+            explanation: `Axioms are the basis of the theory.`
         }
     ];
 }

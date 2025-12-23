@@ -59,10 +59,92 @@
                             onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
                     </div>
 
-                    <div style="margin-bottom: 2rem;">
+                    <div style="margin-bottom: 1.5rem; position: relative;">
                         <label
                             style="display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem; color: var(--color-text-muted);">Password</label>
-                        <input type="password" name="password" required placeholder="Min 8 characters" style="
+                        <div style="position: relative;">
+                            <input type="password" name="password" id="passwordInput" required
+                                placeholder="Min 8 characters" style="
+                                width: 100%; 
+                                padding: 0.875rem; 
+                                padding-right: 2.5rem;
+                                border-radius: var(--radius-sm); 
+                                border: 1px solid rgba(255,255,255,0.1); 
+                                background: rgba(0,0,0,0.2); 
+                                color: white;
+                                outline: none;
+                                transition: border-color 0.2s;
+                            " onfocus="this.style.borderColor='var(--color-primary)'"
+                                onblur="this.style.borderColor='rgba(255,255,255,0.1)'"
+                                oninput="checkStrength(this.value)">
+
+                            <button type="button" onclick="togglePassword('passwordInput')" style="
+                                position: absolute;
+                                right: 10px;
+                                top: 50%;
+                                transform: translateY(-50%);
+                                background: none;
+                                border: none;
+                                color: var(--color-text-muted);
+                                cursor: pointer;
+                                padding: 0;
+                            ">👁️</button>
+                        </div>
+
+                        <!-- Strength Meter -->
+                        <div style="margin-top: 0.5rem; display: flex; gap: 4px; height: 4px;">
+                            <div id="strength-1"
+                                style="flex: 1; background: rgba(255,255,255,0.1); border-radius: 2px; transition: background 0.3s;">
+                            </div>
+                            <div id="strength-2"
+                                style="flex: 1; background: rgba(255,255,255,0.1); border-radius: 2px; transition: background 0.3s;">
+                            </div>
+                            <div id="strength-3"
+                                style="flex: 1; background: rgba(255,255,255,0.1); border-radius: 2px; transition: background 0.3s;">
+                            </div>
+                        </div>
+                        <div id="strength-text"
+                            style="font-size: 0.75rem; color: var(--color-text-muted); margin-top: 4px; text-align: right;">
+                        </div>
+                    </div>
+
+                    <script>
+                        function togglePassword(id) {
+                            const input = document.getElementById(id);
+                            input.type = input.type === 'password' ? 'text' : 'password';
+                        }
+
+                        function checkStrength(password) {
+                            const bars = [document.getElementById('strength-1'), document.getElementById('strength-2'), document.getElementById('strength-3')];
+                            const text = document.getElementById('strength-text');
+
+                            let score = 0;
+                            if (password.length > 5) score++;
+                            if (password.length > 8 && /[A-Z]/.test(password)) score++;
+                            if (password.length > 10 && /[0-9]/.test(password) && /[^A-Za-z0-9]/.test(password)) score++;
+
+                            const colors = ['rgba(255,255,255,0.1)', '#ef4444', '#eab308', '#22c55e'];
+                            const labels = ['', 'Weak', 'Medium', 'Strong'];
+
+                            bars.forEach((bar, idx) => {
+                                if (idx < score) {
+                                    bar.style.background = colors[score];
+                                } else {
+                                    bar.style.background = 'rgba(255,255,255,0.1)';
+                                }
+                            });
+
+                            text.innerText = labels[score];
+                            text.style.color = colors[score];
+                        }
+                    </script>
+
+                    <div style="margin-bottom: 2rem;">
+                        <label
+                            style="display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem; color: var(--color-text-muted);">Confirm
+                            Password</label>
+                        <input type="password" name="confirmPassword" required placeholder="Confirm your password"
+                            style="
                     width: 100%; 
                     padding: 0.875rem; 
                     border-radius: var(--radius-sm); 

@@ -47,11 +47,11 @@
         right: 0;
         width: 350px;
         height: 500px;
-        background: rgba(15, 23, 42, 0.65); /* Transparent Dark */
-        border: 1px solid rgba(255,255,255,0.1);
+        background: var(--glass-bg); 
+        border: var(--glass-border);
         border-radius: var(--radius-lg);
-        box-shadow: 0 10px 40px -10px rgba(0,0,0,0.5);
-        backdrop-filter: blur(12px); /* Glass Effect */
+        box-shadow: var(--glass-shadow);
+        backdrop-filter: blur(16px); 
         flex-direction: column;
         overflow: hidden;
         animation: fadeInUp 0.3s ease-out, floatWindow 6s ease-in-out infinite; 

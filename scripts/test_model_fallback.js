@@ -17,9 +17,9 @@ async function listModels() {
 
         // Let's stick to 'gemini-pro' for immediate stability if 1.5-flash is flaky for this key/region.
         // BUT, I will first just run a quick test with 'gemini-pro' to confirm it works.
-        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
         const result = await model.generateContent("Hello");
-        console.log("gemini-pro works: ", await result.response.text());
+        console.log("gemini-2.5-flash works: ", await result.response.text());
 
     } catch (error) {
         console.error("Error:", error.message);
